@@ -6,6 +6,14 @@
 <section class="page-today">
   <h1>Today</h1>
 
+  <form class="quick-add" action="/tasks" method="post">
+    {{ csrf_hidden_input(request) }}
+    <input type="hidden" name="due_date" value="{{ today_date }}">
+    <input type="hidden" name="status" value="next_action">
+    <input type="text" name="title" placeholder="Add a task for today…" required autocomplete="off">
+    <button type="submit">Add</button>
+  </form>
+
   {% if overdue %}
   <h2 class="section-heading section-overdue">Overdue</h2>
   <ul class="task-list">

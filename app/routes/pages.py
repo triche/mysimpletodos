@@ -71,6 +71,7 @@ def today(request: Request, session: Session = Depends(get_session)) -> HTMLResp
         "projects": projects_map,
         "projects_list": projects_all,
         "status_labels": STATUS_LABELS,
+        "today_date": date.today().isoformat(),
     })
     return templates.TemplateResponse(request, "today.html", ctx)
 

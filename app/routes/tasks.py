@@ -32,6 +32,8 @@ def create_task_route(
     request: Request,
     title: str = Form(""),
     project_id: str = Form(""),
+    due_date: str = Form(""),
+    status: str = Form(""),
     session: Session = Depends(get_session),
 ) -> RedirectResponse:
     if not title.strip():
@@ -39,6 +41,10 @@ def create_task_route(
     kwargs: dict = {"title": title.strip()}
     if project_id:
         kwargs["project_id"] = int(project_id)
+    if due_date:
+        kwargs["due_date"] = date.fromisoformat(due_date)
+    if status:
+        kwargs["status"] = TaskStatus(status)
     create_task(session, **kwargs)
     return RedirectResponse(redirect_back(request), status_code=303)
 
