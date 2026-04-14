@@ -49,7 +49,7 @@ def projects(ctx: click.Context) -> None:
     ]
 
     click.echo(render_project_table(active, task_counts=task_counts, plain=plain))
-    click.echo(f"{len(active)} project(s)")
+    click.echo(click.style(f"{len(active)} project(s)", dim=True))
 
 
 @click.command("project")
@@ -70,11 +70,11 @@ def project(ctx: click.Context, project_id: int) -> None:
     if not proj:
         raise click.ClickException(f"Project {project_id} not found.")
 
-    click.echo(f"Project: {proj['name']}")
+    click.echo(click.style(f"Project: {proj['name']}", fg="bright_blue", bold=True))
     if proj.get("description"):
         click.echo(f"  {proj['description']}")
     if proj.get("notes"):
-        click.echo(f"  Notes: {proj['notes']}")
+        click.echo(click.style(f"  Notes: {proj['notes']}", dim=True))
     if proj.get("due_date"):
         click.echo(f"  Due: {proj['due_date']}")
     click.echo()
@@ -86,5 +86,5 @@ def project(ctx: click.Context, project_id: int) -> None:
         group = [t for t in project_tasks if t.get("status") == status_key]
         if group:
             label = STATUS_LABELS.get(status_key, status_key)
-            click.echo(f"── {label} ──")
+            click.echo(click.style(f"── {label} ──", fg="cyan", bold=True))
             click.echo(render_task_table(group, plain=plain))

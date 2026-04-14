@@ -18,10 +18,10 @@ def health(ctx: click.Context) -> None:
         client = GTDClient(server_url, api_key)
         result = client.health()
         if result.get("status") == "ok":
-            click.echo(f"✓ Server is healthy ({server_url})")
+            click.echo(click.style(f"✓ Server is healthy ({server_url})", fg="green"))
         else:
-            click.echo(f"✗ Unexpected response: {result}", err=True)
+            click.echo(click.style(f"✗ Unexpected response: {result}", fg="red"), err=True)
             ctx.exit(1)
     except click.ClickException as exc:
-        click.echo(f"✗ Server unreachable: {exc.format_message()}", err=True)
+        click.echo(click.style(f"✗ Server unreachable: {exc.format_message()}", fg="red"), err=True)
         ctx.exit(1)

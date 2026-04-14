@@ -29,7 +29,7 @@ def config_init(url: str, api_key: str) -> None:
     """Interactive setup: create ~/.gtd/config.toml."""
     config = {"server": {"url": url}, "auth": {"api_key": api_key}}
     save_config(config)
-    click.echo("✓ Configuration saved to ~/.gtd/config.toml")
+    click.echo(click.style("✓ Configuration saved to ~/.gtd/config.toml", fg="green"))
 
 
 @config_group.command("show")
@@ -63,4 +63,4 @@ def config_set(key: str, value: str) -> None:
         config[section] = {}
     config[section][field] = value
     save_config(config)
-    click.echo(f"✓ {key} updated")
+    click.echo(click.style(f"✓ {key} updated", fg="green"))

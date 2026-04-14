@@ -62,7 +62,7 @@ def tasks(
 
     plain = ctx.obj.get("plain", False)
     click.echo(render_task_table(task_list, plain=plain))
-    click.echo(f"{len(task_list)} task(s)")
+    click.echo(click.style(f"{len(task_list)} task(s)", dim=True))
 
 
 @click.command()
@@ -73,7 +73,7 @@ def add(ctx: click.Context, title: str, project: int | None) -> None:
     """Create a new task."""
     client = _make_client(ctx)
     client.create_task(title, project_id=project)
-    click.echo(f'✓ Task created: "{title}"')
+    click.echo(click.style(f'✓ Task created: "{title}"', fg="green"))
 
 
 @click.command()
@@ -83,7 +83,7 @@ def complete(ctx: click.Context, task_id: int) -> None:
     """Complete a task."""
     client = _make_client(ctx)
     client.complete_task(task_id)
-    click.echo(f"✓ Task {task_id} completed")
+    click.echo(click.style(f"✓ Task {task_id} completed", fg="green"))
 
 
 @click.command()
@@ -93,7 +93,7 @@ def reopen(ctx: click.Context, task_id: int) -> None:
     """Reopen a completed task."""
     client = _make_client(ctx)
     client.reopen_task(task_id)
-    click.echo(f"✓ Task {task_id} reopened")
+    click.echo(click.style(f"✓ Task {task_id} reopened", fg="yellow"))
 
 
 QUICK_UPDATE_FIELDS = {"status", "due_date", "project_id"}
@@ -140,8 +140,8 @@ def edit(
         field_name = next(iter(fields))
         if field_name in QUICK_UPDATE_FIELDS:
             client.quick_update_task(task_id, field_name, fields[field_name])
-            click.echo(f"✓ Task {task_id} updated")
+            click.echo(click.style(f"✓ Task {task_id} updated", fg="green"))
             return
 
     client.update_task(task_id, **fields)
-    click.echo(f"✓ Task {task_id} updated")
+    click.echo(click.style(f"✓ Task {task_id} updated", fg="green"))

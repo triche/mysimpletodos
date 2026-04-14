@@ -12,6 +12,7 @@ from gtd_cli.commands.projects import project, projects
 from gtd_cli.commands.report import report
 from gtd_cli.commands.tasks import add, complete, edit, reopen, tasks
 from gtd_cli.commands.views import inbox, today
+from gtd_cli.display import render_colored_banner
 
 BANNER = r"""
    ██████╗ ████████╗██████╗     ████████╗ ██████╗ ██████╗  ██████╗ ███████╗
@@ -29,7 +30,7 @@ class GTDBanner(click.Group):
 
     def format_help(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
         if ctx.parent is None:
-            formatter.write(BANNER + "\n")
+            formatter.write(render_colored_banner())
         super().format_help(ctx, formatter)
 
 

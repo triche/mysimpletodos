@@ -38,7 +38,7 @@ def export_tasks(ctx: click.Context, fmt: str, status: str | None, output: str |
     data = client.export_tasks(fmt=fmt, status=status)
     if output:
         Path(output).write_text(data)
-        click.echo(f"✓ Tasks exported to {output}")
+        click.echo(click.style(f"✓ Tasks exported to {output}", fg="green"))
     else:
         click.echo(data)
 
@@ -59,6 +59,6 @@ def export_projects(ctx: click.Context, fmt: str, output: str | None) -> None:
     data = client.export_projects(fmt=fmt)
     if output:
         Path(output).write_text(data)
-        click.echo(f"✓ Projects exported to {output}")
+        click.echo(click.style(f"✓ Projects exported to {output}", fg="green"))
     else:
         click.echo(data)

@@ -44,16 +44,16 @@ def today(ctx: click.Context) -> None:
     due_today = [t for due, t in relevant if due == today_date]
 
     if overdue:
-        click.echo("── Overdue ──")
+        click.echo(click.style("── Overdue ──", fg="red", bold=True))
         click.echo(render_task_table(overdue, plain=plain))
     if due_today:
-        click.echo("── Due Today ──")
+        click.echo(click.style("── Due Today ──", fg="blue", bold=True))
         click.echo(render_task_table(due_today, plain=plain))
 
     if not overdue and not due_today:
-        click.echo("No overdue or due-today tasks. 🎉")
+        click.echo(click.style("No overdue or due-today tasks. 🎉", fg="green"))
     else:
-        click.echo(f"{len(overdue)} overdue, {len(due_today)} due today")
+        click.echo(click.style(f"{len(overdue)} overdue, {len(due_today)} due today", dim=True))
 
 
 @click.command()
@@ -64,4 +64,4 @@ def inbox(ctx: click.Context) -> None:
     task_list = client.get_tasks(status="inbox")
     plain = ctx.obj.get("plain", False)
     click.echo(render_task_table(task_list, plain=plain))
-    click.echo(f"{len(task_list)} task(s) in inbox")
+    click.echo(click.style(f"{len(task_list)} task(s) in inbox", dim=True))
