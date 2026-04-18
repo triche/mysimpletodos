@@ -1,8 +1,20 @@
 # GTD TODOs
 
-GTD TODOs is a local-first task application for a single laptop user. The MVP is intentionally small: FastAPI serves HTML pages, SQLite persists data, and the app is designed around GTD task states, optional due dates, recurring tasks, Markdown notes, and simple project organization.
+GTD TODOs is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around GTD task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.
 
 ![GTD TODOs logo](docs/gtd-todos-logo.png)
+
+## Features
+
+- **GTD workflow**: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.
+- **Projects**: Group tasks under projects with their own notes, due dates, and completion state.
+- **Recurring tasks**: Daily, weekly, monthly, or custom-interval recurrence. Completing a recurring task advances its due date instead of marking it done.
+- **Markdown notes**: Task and project notes are stored as raw Markdown and rendered as safe HTML.
+- **Quick updates**: Inline status, due date, and project changes from list views without opening the edit form.
+- **Search**: Full-text search across tasks with filters for status, project, due date, and recurrence.
+- **Export**: CSV and JSON export for tasks and projects.
+- **Passkey auth**: Single-user WebAuthn authentication with API key support for programmatic access.
+- **CSRF protection**: Double-submit cookie middleware on all mutation routes.
 
 ## Local Python Setup
 
@@ -45,7 +57,7 @@ Stop the stack:
 docker compose down
 ```
 
-The container listens internally on port 8080 but is mapped to **port 8081** on the host: `http://localhost:8081`.
+The container listens internally on port 8080 but is mapped to **port 8081** on the host: `http://localhost:8081`. The compose file sets `WEBAUTHN_ORIGIN` to `http://localhost:8081` by default to match.
 
 ## Authentication
 
@@ -55,10 +67,12 @@ GTD TODOs supports single-user passkey (WebAuthn) authentication. On first visit
 
 | Variable | Purpose | Default |
 |---|---|---|
+| `APP_NAME` | Application display name | `GTD TODOs` |
+| `APP_ENV` | Environment (`development` / `production`) | `development` |
 | `APP_HOST` | Bind address | `0.0.0.0` |
 | `APP_PORT` | Listen port | `8080` |
 | `DATABASE_URL` | SQLite connection string | `sqlite:////data/todo.db` |
-| `TZ` | Container timezone | *(unset)* |
+| `TZ` | Container timezone | *(unset; compose sets `America/Chicago`)* |
 | `AUTH_DISABLED` | Disable auth entirely (for local dev / existing tests) | `false` |
 | `AUTH_SECRET_KEY` | Secret for signing session cookies | *auto-generated* |
 | `AUTH_SESSION_MAX_AGE` | Session cookie max age in seconds | `604800` (7 days) |
@@ -89,6 +103,57 @@ AUTH_DISABLED=true uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 80
 ### First-Run Setup
 
 When no credentials exist in the database, visiting any page redirects to `/auth/setup` where you register a passkey. After setup, future visits go through the login flow at `/auth/login`.
+
+## Routes
+
+### Pages
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Redirects to `/inbox` |
+| `GET` | `/inbox` | Inbox — tasks with `inbox` status and a quick-add form |
+| `GET` | `/today` | Today — overdue tasks and tasks due today |
+| `GET` | `/tasks` | All tasks — filterable by `status`, `project_id`, `has_due_date`, `is_recurring`, and free-text `q` search |
+| `GET` | `/tasks/{id}/edit` | Edit form for a single task |
+| `GET` | `/projects` | Projects list with optional `show` and `has_due_date` filters |
+| `GET` | `/projects/{id}` | Project detail — tasks grouped by GTD status |
+| `GET` | `/projects/{id}/edit` | Edit form for a single project |
+| `GET` | `/settings` | Settings page — API key management |
+
+### Task Mutations
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/tasks` | Create a task (defaults to `inbox`). Accepts optional `project_id` |
+| `POST` | `/tasks/{id}/update` | Update task fields from the edit form |
+| `POST` | `/tasks/{id}/quick-update` | Inline single-field update (status, due date, or project) |
+| `POST` | `/tasks/{id}/complete` | Complete a task. Recurring tasks advance `due_date`; others move to `done` |
+| `POST` | `/tasks/{id}/reopen` | Reopen a completed task back to `inbox` |
+
+### Project Mutations
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/projects` | Create a new project |
+| `POST` | `/projects/{id}/update` | Update project name, description, notes, and due date |
+| `POST` | `/projects/{id}/complete` | Mark a project as completed |
+
+### Export
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/export/tasks.csv` | Export tasks as CSV (optional `status` filter) |
+| `GET` | `/export/tasks.json` | Export tasks as JSON (optional `status` filter) |
+| `GET` | `/export/projects.csv` | Export projects as CSV |
+| `GET` | `/export/projects.json` | Export projects as JSON |
+
+### Health
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Returns `{"status": "ok"}` |
+
+See [docs/api.md](docs/api.md) for full API documentation including form fields and data model details.
 
 ## Backup and Restore
 
@@ -140,16 +205,28 @@ The GTD CLI provides command-line access to the running GTD TODOs server.
 gtd config init
 ```
 
-### Usage
+### Commands
 
-```bash
-gtd today            # show overdue + due-today tasks
-gtd inbox            # show inbox
-gtd add "Buy milk"   # quick-add a task
-gtd complete 42      # complete a task
-gtd report           # daily GTD focus report
-gtd --help           # full command reference
-```
+| Command | Description |
+|---|---|
+| `gtd today` | Show overdue + due-today tasks |
+| `gtd inbox` | Show inbox tasks |
+| `gtd tasks` | List/filter all tasks |
+| `gtd add "Buy milk"` | Quick-add a task |
+| `gtd complete 42` | Complete a task |
+| `gtd reopen 42` | Reopen a completed task |
+| `gtd edit 42 --status next_action` | Edit task fields |
+| `gtd projects` | List projects |
+| `gtd project 1` | Show project detail |
+| `gtd export tasks` | Export tasks (JSON/CSV) |
+| `gtd export projects` | Export projects (JSON/CSV) |
+| `gtd report` | Daily GTD focus report |
+| `gtd health` | Check server connectivity |
+| `gtd config init` | Interactive config setup |
+| `gtd config show` | Print current config |
+| `gtd config set KEY VALUE` | Set a config value |
+
+Global flags: `--server URL`, `--plain`, `--version`.
 
 See [cli/README.md](cli/README.md) for full CLI documentation.
 
@@ -181,12 +258,24 @@ docker build .
 
 ## Project Structure
 
-- `app/`: FastAPI app, routes, SQLModel models, Markdown helpers, templates, and static assets.
-- `cli/`: GTD CLI package — command-line interface for the server.
-- `scripts/`: Installation scripts (e.g. `install-cli.sh`).
-- `tests/`: test coverage for app import, page rendering, health checks, SQLite initialization, GTD workflow routes, and service-layer logic.
-- `docs/`: human-readable API and agent-integration documentation.
-- `.github/`: Copilot instructions, skills, and CI workflow.
+- `app/` — FastAPI application.
+  - `routes/` — Page, task, project, auth, settings, export, and health route handlers.
+  - `services/` — Service layer: task, project, auth, API key, export, and health operations.
+  - `models.py` — SQLModel domain models (Task, Project, WebAuthnCredential, APIKey).
+  - `templates/` — Jinja2 templates for server-rendered pages.
+  - `static/` — CSS and JavaScript assets.
+  - `csrf.py` — Double-submit cookie CSRF middleware.
+  - `markdown.py` — Markdown-to-safe-HTML rendering.
+  - `auth.py` — Session cookie creation and validation.
+  - `config.py` — Environment-based settings.
+  - `db.py` — SQLite engine and session management.
+  - `seed.py` — Sample data seeding for local development.
+  - `logging_config.py` — Structured logging setup.
+- `cli/` — GTD CLI package: command-line interface for the server.
+- `scripts/` — Utility scripts (e.g. `install-cli.sh`, `backup-db.sh`).
+- `tests/` — Pytest suite covering routes, services, auth, security, search, and more.
+- `docs/` — Human-readable API, LLM integration, and planning documentation.
+- `.github/` — Copilot instructions, skills, and CI workflow.
 
 ## Documentation
 

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GTD TODOs</title>
+<link rel="icon" type="image/png" href="gtd-todos-logo.png">
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --code-bg: #f3f4f6;
+    --link: #2563eb;
+    --th-bg: #f9fafb;
+    --accent: #4f46e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111827;
+      --fg: #f3f4f6;
+      --muted: #9ca3af;
+      --border: #374151;
+      --code-bg: #1f2937;
+      --link: #60a5fa;
+      --th-bg: #1f2937;
+      --accent: #818cf8;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+    color: var(--fg);
+    background: var(--bg);
+    margin: 0;
+    padding: 2rem 1rem;
+    max-width: 52rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  h1, h2, h3 { margin-top: 2rem; margin-bottom: 0.75rem; font-weight: 600; }
+  h1 { font-size: 2rem; border-bottom: 2px solid var(--accent); padding-bottom: 0.5rem; }
+  h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  .page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .page-title img {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  p { margin: 0.6rem 0; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    line-height: 1.45;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+  }
+  th { background: var(--th-bg); font-weight: 600; }
+  ul, ol { padding-left: 1.5rem; }
+  li { margin: 0.3rem 0; }
+  img { max-width: 100%; height: auto; display: block; margin: 1rem auto; }
+  strong { font-weight: 600; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+
+<header class="page-title">
+  <img src="gtd-todos-logo.png" alt="GTD TODOs logo" width="48" height="48">
+  <h1>GTD TODOs</h1>
+</header>
+
+<p>GTD TODOs is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around GTD task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.</p>
+
+<h2>Features</h2>
+<ul>
+  <li><strong>GTD workflow</strong>: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.</li>
+  <li><strong>Projects</strong>: Group tasks under projects with their own notes, due dates, and completion state.</li>
+  <li><strong>Recurring tasks</strong>: Daily, weekly, monthly, or custom-interval recurrence. Completing a recurring task advances its due date instead of marking it done.</li>
+  <li><strong>Markdown notes</strong>: Task and project notes are stored as raw Markdown and rendered as safe HTML.</li>
+  <li><strong>Quick updates</strong>: Inline status, due date, and project changes from list views without opening the edit form.</li>
+  <li><strong>Search</strong>: Full-text search across tasks with filters for status, project, due date, and recurrence.</li>
+  <li><strong>Export</strong>: CSV and JSON export for tasks and projects.</li>
+  <li><strong>Passkey auth</strong>: Single-user WebAuthn authentication with API key support for programmatic access.</li>
+  <li><strong>CSRF protection</strong>: Double-submit cookie middleware on all mutation routes.</li>
+</ul>
+
+<h2>Local Python Setup</h2>
+<ol>
+  <li>Install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a> (e.g. <code>brew install uv</code>).</li>
+  <li>Install the project with development dependencies.
+    <pre><code>uv sync</code></pre>
+  </li>
+  <li>Run the app locally.
+    <pre><code>uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080</code></pre>
+  </li>
+</ol>
+<p>The default database URL is <code>sqlite:////data/todo.db</code>. For local development outside Docker, set <code>DATABASE_URL</code> to a writable path such as <code>sqlite:///./data/todo.db</code>.</p>
+
+<h2>Docker Compose</h2>
+<p>The compose stack requires <code>AUTH_SECRET_KEY</code>. Generate one and export it (or add it to a <code>.env</code> file next to <code>docker-compose.yml</code>):</p>
+<pre><code># Generate a secret
+python -c "import secrets; print(secrets.token_hex(32))"
+
+# Export it (or add AUTH_SECRET_KEY=&lt;value&gt; to .env)
+export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
+<p>Start the app with a persistent named volume mounted at <code>/data</code>:</p>
+<pre><code>docker compose up --build</code></pre>
+<p>Stop the stack:</p>
+<pre><code>docker compose down</code></pre>
+<p>The container listens internally on port 8080 but is mapped to <strong>port 8081</strong> on the host: <code>http://localhost:8081</code>. The compose file sets <code>WEBAUTHN_ORIGIN</code> to <code>http://localhost:8081</code> by default to match.</p>
+
+<h2>Authentication</h2>
+<p>GTD TODOs supports single-user passkey (WebAuthn) authentication. On first visit a passkey is registered, and subsequent access requires authenticating with that passkey.</p>
+
+<h3>Environment Variables</h3>
+<table>
+  <tr><th>Variable</th><th>Purpose</th><th>Default</th></tr>
+  <tr><td><code>APP_NAME</code></td><td>Application display name</td><td><code>GTD TODOs</code></td></tr>
+  <tr><td><code>APP_ENV</code></td><td>Environment (<code>development</code> / <code>production</code>)</td><td><code>development</code></td></tr>
+  <tr><td><code>APP_HOST</code></td><td>Bind address</td><td><code>0.0.0.0</code></td></tr>
+  <tr><td><code>APP_PORT</code></td><td>Listen port</td><td><code>8080</code></td></tr>
+  <tr><td><code>DATABASE_URL</code></td><td>SQLite connection string</td><td><code>sqlite:////data/todo.db</code></td></tr>
+  <tr><td><code>TZ</code></td><td>Container timezone</td><td><em>(unset; compose sets <code>America/Chicago</code>)</em></td></tr>
+  <tr><td><code>AUTH_DISABLED</code></td><td>Disable auth entirely (for local dev / existing tests)</td><td><code>false</code></td></tr>
+  <tr><td><code>AUTH_SECRET_KEY</code></td><td>Secret for signing session cookies</td><td><em>auto-generated</em></td></tr>
+  <tr><td><code>AUTH_SESSION_MAX_AGE</code></td><td>Session cookie max age in seconds</td><td><code>604800</code> (7 days)</td></tr>
+  <tr><td><code>WEBAUTHN_RP_ID</code></td><td>WebAuthn Relying Party ID (domain)</td><td><code>localhost</code></td></tr>
+  <tr><td><code>WEBAUTHN_RP_NAME</code></td><td>Human-readable RP name</td><td><code>GTD TODOs</code></td></tr>
+  <tr><td><code>WEBAUTHN_ORIGIN</code></td><td>Expected origin for WebAuthn ceremonies</td><td><code>http://localhost:8080</code></td></tr>
+</table>
+
+<h3>API Keys (Programmatic Access)</h3>
+<p>API keys allow CLI tools and scripts to access the API without a browser session. Generate keys from the Settings page (gear icon in the nav bar) after logging in with a passkey.</p>
+<p>Use the key in the <code>Authorization</code> header:</p>
+<pre><code>curl -H "Authorization: Bearer gtd_your_key_here" http://localhost:8080/export/tasks.json</code></pre>
+<p>Keys are shown in full once at creation time and stored as SHA-256 hashes. Up to 10 keys can be active. Revoke keys from the Settings page.</p>
+
+<h3>Disabling Auth for Local Development</h3>
+<p>Set <code>AUTH_DISABLED=true</code> to skip all authentication:</p>
+<pre><code>AUTH_DISABLED=true uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080</code></pre>
+
+<h3>First-Run Setup</h3>
+<p>When no credentials exist in the database, visiting any page redirects to <code>/auth/setup</code> where you register a passkey. After setup, future visits go through the login flow at <code>/auth/login</code>.</p>
+
+<h2>Routes</h2>
+
+<h3>Pages</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/</code></td><td>Redirects to <code>/inbox</code></td></tr>
+  <tr><td><code>GET</code></td><td><code>/inbox</code></td><td>Inbox — tasks with <code>inbox</code> status and a quick-add form</td></tr>
+  <tr><td><code>GET</code></td><td><code>/today</code></td><td>Today — overdue tasks and tasks due today</td></tr>
+  <tr><td><code>GET</code></td><td><code>/tasks</code></td><td>All tasks — filterable by <code>status</code>, <code>project_id</code>, <code>has_due_date</code>, <code>is_recurring</code>, and free-text <code>q</code> search</td></tr>
+  <tr><td><code>GET</code></td><td><code>/tasks/{id}/edit</code></td><td>Edit form for a single task</td></tr>
+  <tr><td><code>GET</code></td><td><code>/projects</code></td><td>Projects list with optional <code>show</code> and <code>has_due_date</code> filters</td></tr>
+  <tr><td><code>GET</code></td><td><code>/projects/{id}</code></td><td>Project detail — tasks grouped by GTD status</td></tr>
+  <tr><td><code>GET</code></td><td><code>/projects/{id}/edit</code></td><td>Edit form for a single project</td></tr>
+  <tr><td><code>GET</code></td><td><code>/settings</code></td><td>Settings page — API key management</td></tr>
+</table>
+
+<h3>Task Mutations</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>POST</code></td><td><code>/tasks</code></td><td>Create a task (defaults to <code>inbox</code>). Accepts optional <code>project_id</code></td></tr>
+  <tr><td><code>POST</code></td><td><code>/tasks/{id}/update</code></td><td>Update task fields from the edit form</td></tr>
+  <tr><td><code>POST</code></td><td><code>/tasks/{id}/quick-update</code></td><td>Inline single-field update (status, due date, or project)</td></tr>
+  <tr><td><code>POST</code></td><td><code>/tasks/{id}/complete</code></td><td>Complete a task. Recurring tasks advance <code>due_date</code>; others move to <code>done</code></td></tr>
+  <tr><td><code>POST</code></td><td><code>/tasks/{id}/reopen</code></td><td>Reopen a completed task back to <code>inbox</code></td></tr>
+</table>
+
+<h3>Project Mutations</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>POST</code></td><td><code>/projects</code></td><td>Create a new project</td></tr>
+  <tr><td><code>POST</code></td><td><code>/projects/{id}/update</code></td><td>Update project name, description, notes, and due date</td></tr>
+  <tr><td><code>POST</code></td><td><code>/projects/{id}/complete</code></td><td>Mark a project as completed</td></tr>
+</table>
+
+<h3>Export</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/export/tasks.csv</code></td><td>Export tasks as CSV (optional <code>status</code> filter)</td></tr>
+  <tr><td><code>GET</code></td><td><code>/export/tasks.json</code></td><td>Export tasks as JSON (optional <code>status</code> filter)</td></tr>
+  <tr><td><code>GET</code></td><td><code>/export/projects.csv</code></td><td>Export projects as CSV</td></tr>
+  <tr><td><code>GET</code></td><td><code>/export/projects.json</code></td><td>Export projects as JSON</td></tr>
+</table>
+
+<h3>Health</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/health</code></td><td>Returns <code>{"status": "ok"}</code></td></tr>
+</table>
+
+<p>See <a href="api.md">docs/api.md</a> for full API documentation including form fields and data model details.</p>
+
+<h2>Backup and Restore</h2>
+<p>The SQLite database file is stored in the Docker volume at <code>/data/todo.db</code>. Back it up by copying the file or using the export endpoints:</p>
+<pre><code># Copy the database file directly
+docker compose cp todo-app:/data/todo.db ./backup-todo.db
+
+# Or export data as CSV / JSON (use port 8081 for Docker Compose)
+curl -o tasks.csv http://localhost:8081/export/tasks.csv
+curl -o projects.json http://localhost:8081/export/projects.json</code></pre>
+
+<p>To restore, copy the backup into the running container and restart:</p>
+<pre><code>docker compose down
+docker compose cp ./backup-todo.db todo-app:/data/todo.db
+docker compose up</code></pre>
+
+<p>If the container is not available for <code>docker compose cp</code>, you can copy directly into the named volume's mount point on the host:</p>
+<pre><code># Find the volume's mount point
+docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}'
+
+# Copy the backup there (may require sudo on Linux)
+sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"</code></pre>
+
+<p>See <a href="api.md">docs/api.md</a> for full export endpoint documentation.</p>
+
+<h2>CLI</h2>
+<p>The GTD CLI provides command-line access to the running GTD TODOs server.</p>
+
+<h3>Install</h3>
+<pre><code>./scripts/install-cli.sh</code></pre>
+
+<h3>First-Time Setup</h3>
+<pre><code>gtd config init</code></pre>
+
+<h3>Commands</h3>
+<table>
+  <tr><th>Command</th><th>Description</th></tr>
+  <tr><td><code>gtd today</code></td><td>Show overdue + due-today tasks</td></tr>
+  <tr><td><code>gtd inbox</code></td><td>Show inbox tasks</td></tr>
+  <tr><td><code>gtd tasks</code></td><td>List/filter all tasks</td></tr>
+  <tr><td><code>gtd add "Buy milk"</code></td><td>Quick-add a task</td></tr>
+  <tr><td><code>gtd complete 42</code></td><td>Complete a task</td></tr>
+  <tr><td><code>gtd reopen 42</code></td><td>Reopen a completed task</td></tr>
+  <tr><td><code>gtd edit 42 --status next_action</code></td><td>Edit task fields</td></tr>
+  <tr><td><code>gtd projects</code></td><td>List projects</td></tr>
+  <tr><td><code>gtd project 1</code></td><td>Show project detail</td></tr>
+  <tr><td><code>gtd export tasks</code></td><td>Export tasks (JSON/CSV)</td></tr>
+  <tr><td><code>gtd export projects</code></td><td>Export projects (JSON/CSV)</td></tr>
+  <tr><td><code>gtd report</code></td><td>Daily GTD focus report</td></tr>
+  <tr><td><code>gtd health</code></td><td>Check server connectivity</td></tr>
+  <tr><td><code>gtd config init</code></td><td>Interactive config setup</td></tr>
+  <tr><td><code>gtd config show</code></td><td>Print current config</td></tr>
+  <tr><td><code>gtd config set KEY VALUE</code></td><td>Set a config value</td></tr>
+</table>
+
+<p>Global flags: <code>--server URL</code>, <code>--plain</code>, <code>--version</code>.</p>
+
+<p>See <a href="../cli/README.md">cli/README.md</a> for full CLI documentation.</p>
+
+<h2>Developer Commands</h2>
+
+<p>Run tests:</p>
+<pre><code>uv run pytest</code></pre>
+
+<p>Run lint checks:</p>
+<pre><code>uv run ruff check .</code></pre>
+
+<p>Run type checks:</p>
+<pre><code>uv run mypy app</code></pre>
+
+<p>Build the container image:</p>
+<pre><code>docker build .</code></pre>
+
+<h2>Project Structure</h2>
+<ul>
+  <li><strong>app/</strong> — FastAPI application.
+    <ul>
+      <li><strong>routes/</strong> — Page, task, project, auth, settings, export, and health route handlers.</li>
+      <li><strong>services/</strong> — Service layer: task, project, auth, API key, export, and health operations.</li>
+      <li><strong>models.py</strong> — SQLModel domain models (Task, Project, WebAuthnCredential, APIKey).</li>
+      <li><strong>templates/</strong> — Jinja2 templates for server-rendered pages.</li>
+      <li><strong>static/</strong> — CSS and JavaScript assets.</li>
+      <li><strong>csrf.py</strong> — Double-submit cookie CSRF middleware.</li>
+      <li><strong>markdown.py</strong> — Markdown-to-safe-HTML rendering.</li>
+      <li><strong>auth.py</strong> — Session cookie creation and validation.</li>
+      <li><strong>config.py</strong> — Environment-based settings.</li>
+      <li><strong>db.py</strong> — SQLite engine and session management.</li>
+      <li><strong>seed.py</strong> — Sample data seeding for local development.</li>
+      <li><strong>logging_config.py</strong> — Structured logging setup.</li>
+    </ul>
+  </li>
+  <li><strong>cli/</strong> — GTD CLI package: command-line interface for the server.</li>
+  <li><strong>scripts/</strong> — Utility scripts (e.g. <code>install-cli.sh</code>, <code>backup-db.sh</code>).</li>
+  <li><strong>tests/</strong> — Pytest suite covering routes, services, auth, security, search, and more.</li>
+  <li><strong>docs/</strong> — Human-readable API, LLM integration, and planning documentation.</li>
+  <li><strong>.github/</strong> — Copilot instructions, skills, and CI workflow.</li>
+</ul>
+
+<h2>Documentation</h2>
+<ul>
+  <li><a href="api.md">docs/api.md</a></li>
+  <li><a href="llm-integration.md">docs/llm-integration.md</a></li>
+  <li><a href="../.github/skills/todo-api/SKILL.md">.github/skills/todo-api/SKILL.md</a></li>
+  <li><a href="../.github/skills/todo-data-model/SKILL.md">.github/skills/todo-data-model/SKILL.md</a></li>
+  <li><a href="../.github/skills/gtd-cli/SKILL.md">.github/skills/gtd-cli/SKILL.md</a></li>
+  <li><a href="../cli/README.md">cli/README.md</a></li>
+</ul>
+
+</body>
+</html>
