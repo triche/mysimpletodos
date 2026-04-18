@@ -8,7 +8,7 @@ from sqlmodel import Session, col, func, select
 
 from app.models import APIKey
 
-_KEY_PREFIX = "gtd_"
+_KEY_PREFIX = "mst_"
 _KEY_BYTES = 32
 _MAX_KEYS = 10
 

@@ -5,12 +5,12 @@ from __future__ import annotations
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 
 @respx.mock
 def test_health_success(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", "http://test:8080")
+    monkeypatch.setenv("MST_SERVER_URL", "http://test:8080")
     respx.get("http://test:8080/health").mock(
         return_value=httpx.Response(200, json={"status": "ok"})
     )
@@ -21,7 +21,7 @@ def test_health_success(runner, monkeypatch):
 
 @respx.mock
 def test_health_failure(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", "http://test:8080")
+    monkeypatch.setenv("MST_SERVER_URL", "http://test:8080")
     respx.get("http://test:8080/health").mock(return_value=httpx.Response(500, text="error"))
     result = runner.invoke(cli, ["health"])
     assert result.exit_code != 0

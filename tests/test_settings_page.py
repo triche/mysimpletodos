@@ -33,7 +33,7 @@ def test_generate_key_shows_plaintext_once(client: TestClient) -> None:
         follow_redirects=True,
     )
     assert resp.status_code == 200
-    assert "gtd_" in resp.text
+    assert "mst_" in resp.text
     assert "will not be shown again" in resp.text
 
 

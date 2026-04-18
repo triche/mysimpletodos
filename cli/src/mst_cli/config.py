@@ -1,4 +1,4 @@
-"""Config module for reading/writing ~/.gtd/config.toml."""
+"""Config module for reading/writing ~/.mst/config.toml."""
 
 from __future__ import annotations
 
@@ -17,20 +17,20 @@ DEFAULT_SERVER_URL = "http://localhost:8080"
 
 
 def get_config_dir() -> Path:
-    """Return ~/.gtd, respecting GTD_CONFIG_DIR env override."""
-    override = os.environ.get("GTD_CONFIG_DIR")
+    """Return ~/.mst, respecting MST_CONFIG_DIR env override."""
+    override = os.environ.get("MST_CONFIG_DIR")
     if override:
         return Path(override)
-    return Path.home() / ".gtd"
+    return Path.home() / ".mst"
 
 
 def get_config_path() -> Path:
-    """Return ~/.gtd/config.toml."""
+    """Return ~/.mst/config.toml."""
     return get_config_dir() / "config.toml"
 
 
 def ensure_config_dir() -> Path:
-    """Create ~/.gtd/ with 0700 permissions if it doesn't exist."""
+    """Create ~/.mst/ with 0700 permissions if it doesn't exist."""
     config_dir = get_config_dir()
     if not config_dir.exists():
         config_dir.mkdir(parents=True, mode=0o700)
@@ -59,7 +59,7 @@ def get_server_url(ctx_override: str | None = None) -> str:
     """Resolve server URL: CLI flag > env var > config file > default."""
     if ctx_override:
         return ctx_override
-    env_url = os.environ.get("GTD_SERVER_URL")
+    env_url = os.environ.get("MST_SERVER_URL")
     if env_url:
         return env_url
     config = load_config()
@@ -68,7 +68,7 @@ def get_server_url(ctx_override: str | None = None) -> str:
 
 def get_api_key() -> str | None:
     """Resolve API key: env var > config file."""
-    env_key = os.environ.get("GTD_API_KEY")
+    env_key = os.environ.get("MST_API_KEY")
     if env_key:
         return env_key
     config = load_config()

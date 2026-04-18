@@ -1,10 +1,10 @@
-"""Config commands: gtd config init / show / set."""
+"""Config commands: mst config init / show / set."""
 
 from __future__ import annotations
 
 import click
 
-from gtd_cli.config import get_api_key, get_server_url, load_config, save_config
+from mst_cli.config import get_api_key, get_server_url, load_config, save_config
 
 
 @click.group("config")
@@ -17,7 +17,7 @@ def config_group() -> None:
     "--url",
     prompt="Server URL",
     default="http://localhost:8080",
-    help="GTD TODOs server URL.",
+    help="MySimpleTodos server URL.",
 )
 @click.option(
     "--api-key",
@@ -26,10 +26,10 @@ def config_group() -> None:
     help="API key for authentication.",
 )
 def config_init(url: str, api_key: str) -> None:
-    """Interactive setup: create ~/.gtd/config.toml."""
+    """Interactive setup: create ~/.mst/config.toml."""
     config = {"server": {"url": url}, "auth": {"api_key": api_key}}
     save_config(config)
-    click.echo(click.style("✓ Configuration saved to ~/.gtd/config.toml", fg="green"))
+    click.echo(click.style("✓ Configuration saved to ~/.mst/config.toml", fg="green"))
 
 
 @config_group.command("show")

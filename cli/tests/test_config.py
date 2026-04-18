@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from gtd_cli.config import (
+from mst_cli.config import (
     ensure_config_dir,
     get_api_key,
     get_config_dir,
@@ -13,15 +13,15 @@ from gtd_cli.config import (
 
 
 def test_get_config_dir_default(monkeypatch):
-    monkeypatch.delenv("GTD_CONFIG_DIR", raising=False)
+    monkeypatch.delenv("MST_CONFIG_DIR", raising=False)
     d = get_config_dir()
-    assert d.name == ".gtd"
-    assert str(d).endswith("/.gtd")
+    assert d.name == ".mst"
+    assert str(d).endswith("/.mst")
 
 
 def test_get_config_dir_env_override(monkeypatch, tmp_path):
     override = tmp_path / "custom"
-    monkeypatch.setenv("GTD_CONFIG_DIR", str(override))
+    monkeypatch.setenv("MST_CONFIG_DIR", str(override))
     assert get_config_dir() == override
 
 
@@ -48,7 +48,7 @@ def test_load_config_missing_file():
 
 
 def test_load_save_roundtrip():
-    data = {"server": {"url": "http://test:9090"}, "auth": {"api_key": "gtd_abc123"}}
+    data = {"server": {"url": "http://test:9090"}, "auth": {"api_key": "mst_abc123"}}
     save_config(data)
     loaded = load_config()
     assert loaded == data
@@ -63,7 +63,7 @@ def test_get_server_url_priority(monkeypatch):
     assert get_server_url() == "http://from-config:1234"
 
     # Env var overrides config
-    monkeypatch.setenv("GTD_SERVER_URL", "http://from-env:5678")
+    monkeypatch.setenv("MST_SERVER_URL", "http://from-env:5678")
     assert get_server_url() == "http://from-env:5678"
 
     # CLI flag overrides env
@@ -71,8 +71,8 @@ def test_get_server_url_priority(monkeypatch):
 
 
 def test_get_api_key_env_override(monkeypatch):
-    save_config({"server": {"url": "http://x"}, "auth": {"api_key": "gtd_from_config"}})
-    assert get_api_key() == "gtd_from_config"
+    save_config({"server": {"url": "http://x"}, "auth": {"api_key": "mst_from_config"}})
+    assert get_api_key() == "mst_from_config"
 
-    monkeypatch.setenv("GTD_API_KEY", "gtd_from_env")
-    assert get_api_key() == "gtd_from_env"
+    monkeypatch.setenv("MST_API_KEY", "mst_from_env")
+    assert get_api_key() == "mst_from_env"

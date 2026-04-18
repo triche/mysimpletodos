@@ -1,10 +1,10 @@
 ---
 name: todo-api
-description: Interacting with the running GTD TODOs app over HTTP — routes, endpoints, filtering, exports, and error handling.
+description: Interacting with the running MySimpleTodos app over HTTP — routes, endpoints, filtering, exports, and error handling.
 ---
 # TODO API Skill
 
-Use this skill when interacting with the running GTD TODOs application over HTTP.
+Use this skill when interacting with the running MySimpleTodos application over HTTP.
 
 ## Base Assumptions
 
@@ -24,7 +24,7 @@ Use this skill when interacting with the running GTD TODOs application over HTTP
 - `GET /inbox` shows inbox tasks with a quick-add form.
 - `GET /today` shows overdue tasks and tasks due today (excludes done tasks and tasks without due dates).
 - `GET /projects` lists non-archived, non-completed projects with open and due-today task counts.
-- `GET /projects/{project_id}` shows project details with tasks grouped by GTD status.
+- `GET /projects/{project_id}` shows project details with tasks grouped by status.
 - `GET /projects/{project_id}/edit` shows the project edit form (name, description, notes, due_date).
 - `GET /tasks` shows all tasks with filtering and search support.
 - `GET /tasks/{task_id}/edit` shows the task edit form. Accepts optional `back_url` query parameter to preserve navigation context.
@@ -72,7 +72,7 @@ Recurring tasks whose next due date is today appear automatically. Tasks without
 ## Project Views Behavior
 
 - The projects list shows all non-archived, non-completed projects with open task counts and due-today counts.
-- The project detail page groups tasks by GTD status (Inbox, Next Action, Waiting For, Scheduled, Someday / Maybe, Done).
+- The project detail page groups tasks by status (Inbox, Next Action, Waiting For, Scheduled, Someday / Maybe, Done).
 - A quick-add form on the project detail page creates tasks pre-assigned to that project.
 - The project edit page allows editing name, description, notes (Markdown), and due_date.
 - Projects can be marked complete when all their tasks are done.
@@ -139,7 +139,7 @@ All routes except `/health`, `/auth/*`, and `/static/*` require an authenticated
 
 ### Session Cookie
 
-- Name: `gtd_session`
+- Name: `mst_session`
 - Signed with `itsdangerous.TimestampSigner`
 - `HttpOnly`, `SameSite=Lax`, `Secure` (when HTTPS origin)
 - Max age: `AUTH_SESSION_MAX_AGE` environment variable (default 7 days)
@@ -152,7 +152,7 @@ All routes except `/health`, `/auth/*`, and `/static/*` require an authenticated
 | `AUTH_SECRET_KEY` | auto-generated | Secret for signing cookies |
 | `AUTH_SESSION_MAX_AGE` | `604800` | Cookie max age (seconds) |
 | `WEBAUTHN_RP_ID` | `localhost` | WebAuthn Relying Party ID |
-| `WEBAUTHN_RP_NAME` | `GTD TODOs` | RP display name |
+| `WEBAUTHN_RP_NAME` | `MySimpleTodos` | RP display name |
 | `WEBAUTHN_ORIGIN` | `http://localhost:8080` | Expected origin |
 
 ### API Key (Programmatic Access)
@@ -162,7 +162,7 @@ API keys allow CLI tools and scripts to access the API without a browser session
 Include the key in the `Authorization` header:
 
 ```
-Authorization: Bearer gtd_your_key_here
+Authorization: Bearer mst_your_key_here
 ```
 
 API keys grant access to all protected routes (same scope as session cookies).

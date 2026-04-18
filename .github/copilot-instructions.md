@@ -1,4 +1,4 @@
-# GTD TODOs Copilot Instructions
+# MySimpleTodos Copilot Instructions
 
 ## Working Model
 
@@ -55,7 +55,7 @@ docker compose up --build
 - Backend: FastAPI on Python 3.12.
 - UI: server-rendered Jinja templates with small HTMX interactions when needed.
 - Persistence: SQLite, with the canonical persistent path under `/data` in Docker.
-- Authentication: Single-user passkey (WebAuthn) via `py_webauthn` and `itsdangerous` session cookies. API keys (`Authorization: Bearer gtd_...`) provide programmatic access. Set `AUTH_DISABLED=true` to skip auth in dev/test. Existing tests use `AUTH_DISABLED=true` via `conftest.py`.
+- Authentication: Single-user passkey (WebAuthn) via `py_webauthn` and `itsdangerous` session cookies. API keys (`Authorization: Bearer mst_...`) provide programmatic access. Set `AUTH_DISABLED=true` to skip auth in dev/test. Existing tests use `AUTH_DISABLED=true` via `conftest.py`.
 - Domain rule: recurring tasks remain single persistent task records whose `due_date` advances on completion.
 - Notes rule: task notes are stored as raw Markdown and rendered as safe HTML.
 
@@ -63,10 +63,10 @@ docker compose up --build
 
 Before starting work, read the relevant skill file from `.github/skills/`:
 
-- **GTD Daily Report** (`.github/skills/gtd-daily-report/SKILL.md`): When the user asks for a daily report, focus plan, tomorrow's priorities, or a GTD review.
+- **Daily Report** (`.github/skills/daily-report/SKILL.md`): When the user asks for a daily report, focus plan, tomorrow's priorities, or a task review.
 - **TODO API** (`.github/skills/todo-api/SKILL.md`): When interacting with the running app over HTTP — routes, endpoints, filtering, exports, and error handling.
-- **TODO Data Model** (`.github/skills/todo-data-model/SKILL.md`): When reasoning about task/project semantics — GTD statuses, due dates, recurrence, and notes.
-- **GTD CLI** (`.github/skills/gtd-cli/SKILL.md`): When using the command line to manage tasks, projects, or generate reports instead of the HTTP API directly.
+- **TODO Data Model** (`.github/skills/todo-data-model/SKILL.md`): When reasoning about task/project semantics — statuses, due dates, recurrence, and notes.
+- **MST CLI** (`.github/skills/mst-cli/SKILL.md`): When using the command line to manage tasks, projects, or generate reports instead of the HTTP API directly.
 
 ## Documentation Expectations
 

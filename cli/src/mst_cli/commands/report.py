@@ -1,4 +1,4 @@
-"""Report command: gtd report — structured GTD data summary."""
+"""Report command: mst report — structured task data summary."""
 
 from __future__ import annotations
 
@@ -6,14 +6,14 @@ from datetime import date, datetime, timedelta
 
 import click
 
-from gtd_cli.client import GTDClient
-from gtd_cli.config import get_api_key, get_server_url
+from mst_cli.client import MSTClient
+from mst_cli.config import get_api_key, get_server_url
 
 
-def _make_client(ctx: click.Context) -> GTDClient:
+def _make_client(ctx: click.Context) -> MSTClient:
     server_url = get_server_url(ctx.obj.get("server"))
     api_key = get_api_key()
-    return GTDClient(server_url, api_key)
+    return MSTClient(server_url, api_key)
 
 
 def _parse_date(s: str | None) -> date | None:
@@ -33,11 +33,11 @@ def _build_project_map(projects: list[dict]) -> dict[int, str]:
 def _build_report(
     tasks: list[dict], projects: list[dict], target_date: date
 ) -> str:
-    """Build the structured GTD report as Markdown."""
+    """Build the structured task report as Markdown."""
     project_map = _build_project_map(projects)
     lines: list[str] = []
 
-    lines.append(f"## GTD Focus Report — {target_date.isoformat()}")
+    lines.append(f"## Focus Report — {target_date.isoformat()}")
     lines.append("")
 
     # Classify tasks
@@ -179,7 +179,7 @@ def _build_report(
 @click.option("--tomorrow", is_flag=True, default=False, help="Use tomorrow as the target date.")
 @click.pass_context
 def report(ctx: click.Context, target_date: str | None, tomorrow: bool) -> None:
-    """Generate a structured GTD data summary."""
+    """Generate a structured task data summary."""
     client = _make_client(ctx)
 
     if target_date:

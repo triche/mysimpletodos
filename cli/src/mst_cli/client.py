@@ -1,4 +1,4 @@
-"""HTTP client wrapper for the GTD TODOs API."""
+"""HTTP client wrapper for the MySimpleTodos API."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import click
 import httpx
 
 
-class GTDClient:
-    """HTTP client for the GTD TODOs API."""
+class MSTClient:
+    """HTTP client for the MySimpleTodos API."""
 
     def __init__(self, base_url: str, api_key: str | None = None) -> None:
         headers: dict[str, str] = {}

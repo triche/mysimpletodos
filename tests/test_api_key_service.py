@@ -21,7 +21,7 @@ def test_api_key_table_created(sqlite_database_url: str) -> None:
 
 def test_generate_key_returns_plaintext_and_model(db_session: Session) -> None:
     api_key, plaintext = generate_key(db_session, "test key")
-    assert plaintext.startswith("gtd_")
+    assert plaintext.startswith("mst_")
     assert api_key.id is not None
     assert api_key.name == "test key"
 
@@ -45,7 +45,7 @@ def test_verify_valid_key(db_session: Session) -> None:
 
 
 def test_verify_invalid_key(db_session: Session) -> None:
-    result = verify_key(db_session, "gtd_invalid_key_that_does_not_exist")
+    result = verify_key(db_session, "mst_invalid_key_that_does_not_exist")
     assert result is None
 
 

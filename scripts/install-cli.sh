@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# GTD CLI Installer
-# Installs the gtd command globally using pipx or uv tool install.
+# MST CLI Installer
+# Installs the mst command globally using pipx or uv tool install.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLI_DIR="$(cd "$SCRIPT_DIR/../cli" && pwd)"
 
-echo "Installing GTD CLI from $CLI_DIR ..."
+echo "Installing MST CLI from $CLI_DIR ..."
 
 if command -v pipx &>/dev/null; then
     echo "Found pipx — installing with pipx..."
@@ -28,7 +28,7 @@ fi
 # so we handle both explicitly.
 UV_TOOL_BIN="$HOME/.local/bin"
 PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
-MARKER="# Added by GTD CLI installer"
+MARKER="# Added by MST CLI installer"
 
 ensure_path_in_profile() {
     local profile="$1"
@@ -50,15 +50,15 @@ fi
 # zsh: ~/.zshrc
 ensure_path_in_profile "$HOME/.zshrc"
 
-# Make gtd available in the current shell session
+# Make mst available in the current shell session
 if [[ ":$PATH:" != *":$UV_TOOL_BIN:"* ]]; then
     export PATH="$UV_TOOL_BIN:$PATH"
 fi
 
 echo ""
-echo "✓ GTD CLI installed! Run 'gtd --help' to get started."
-echo "  First-time setup: gtd config init"
-if ! command -v gtd &>/dev/null; then
+echo "✓ MST CLI installed! Run 'mst --help' to get started."
+echo "  First-time setup: mst config init"
+if ! command -v mst &>/dev/null; then
     echo ""
     echo "  Note: You may need to restart your shell or run:"
     echo "    source ~/.bashrc   # for bash"

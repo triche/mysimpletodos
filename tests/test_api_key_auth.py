@@ -56,7 +56,7 @@ def test_bearer_token_grants_access(
 def test_invalid_bearer_token_falls_through(auth_enabled_client: TestClient) -> None:
     resp = auth_enabled_client.get(
         "/inbox",
-        headers={"Authorization": "Bearer gtd_invalid_key_value"},
+        headers={"Authorization": "Bearer mst_invalid_key_value"},
         follow_redirects=False,
     )
     # Falls through to cookie check, then redirects to login

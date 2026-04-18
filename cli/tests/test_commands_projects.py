@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 BASE = "http://test:8080"
 
@@ -44,7 +44,7 @@ TASKS = [
 
 @respx.mock
 def test_projects_list_with_counts(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/projects.json").mock(return_value=httpx.Response(200, json=PROJECTS))
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["projects"])
@@ -56,7 +56,7 @@ def test_projects_list_with_counts(runner, monkeypatch):
 
 @respx.mock
 def test_project_detail_shows_metadata(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/projects.json").mock(return_value=httpx.Response(200, json=PROJECTS))
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["project", "1"])
@@ -69,7 +69,7 @@ def test_project_detail_shows_metadata(runner, monkeypatch):
 
 @respx.mock
 def test_project_detail_groups_tasks(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/projects.json").mock(return_value=httpx.Response(200, json=PROJECTS))
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["project", "1"])
@@ -80,7 +80,7 @@ def test_project_detail_groups_tasks(runner, monkeypatch):
 
 @respx.mock
 def test_project_not_found_shows_error(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/projects.json").mock(return_value=httpx.Response(200, json=PROJECTS))
     result = runner.invoke(cli, ["project", "999"])
     assert result.exit_code != 0

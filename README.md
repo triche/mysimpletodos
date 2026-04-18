@@ -1,12 +1,12 @@
-# GTD TODOs
+# MySimpleTodos
 
-GTD TODOs is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around GTD task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.
+MySimpleTodos is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.
 
-![GTD TODOs logo](docs/gtd-todos-logo.png)
+![MySimpleTodos logo](docs/mst-logo.png)
 
 ## Features
 
-- **GTD workflow**: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.
+- **Task workflow**: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.
 - **Projects**: Group tasks under projects with their own notes, due dates, and completion state.
 - **Recurring tasks**: Daily, weekly, monthly, or custom-interval recurrence. Completing a recurring task advances its due date instead of marking it done.
 - **Markdown notes**: Task and project notes are stored as raw Markdown and rendered as safe HTML.
@@ -61,13 +61,13 @@ The container listens internally on port 8080 but is mapped to **port 8081** on 
 
 ## Authentication
 
-GTD TODOs supports single-user passkey (WebAuthn) authentication. On first visit a passkey is registered, and subsequent access requires authenticating with that passkey.
+MySimpleTodos supports single-user passkey (WebAuthn) authentication. On first visit a passkey is registered, and subsequent access requires authenticating with that passkey.
 
 ### Environment Variables
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `APP_NAME` | Application display name | `GTD TODOs` |
+| `APP_NAME` | Application display name | `MySimpleTodos` |
 | `APP_ENV` | Environment (`development` / `production`) | `development` |
 | `APP_HOST` | Bind address | `0.0.0.0` |
 | `APP_PORT` | Listen port | `8080` |
@@ -77,7 +77,7 @@ GTD TODOs supports single-user passkey (WebAuthn) authentication. On first visit
 | `AUTH_SECRET_KEY` | Secret for signing session cookies | *auto-generated* |
 | `AUTH_SESSION_MAX_AGE` | Session cookie max age in seconds | `604800` (7 days) |
 | `WEBAUTHN_RP_ID` | WebAuthn Relying Party ID (domain) | `localhost` |
-| `WEBAUTHN_RP_NAME` | Human-readable RP name | `GTD TODOs` |
+| `WEBAUTHN_RP_NAME` | Human-readable RP name | `MySimpleTodos` |
 | `WEBAUTHN_ORIGIN` | Expected origin for WebAuthn ceremonies | `http://localhost:8080` |
 
 ### API Keys (Programmatic Access)
@@ -87,7 +87,7 @@ API keys allow CLI tools and scripts to access the API without a browser session
 Use the key in the `Authorization` header:
 
 ```bash
-curl -H "Authorization: Bearer gtd_your_key_here" http://localhost:8080/export/tasks.json
+curl -H "Authorization: Bearer mst_your_key_here" http://localhost:8080/export/tasks.json
 ```
 
 Keys are shown in full once at creation time and stored as SHA-256 hashes. Up to 10 keys can be active. Revoke keys from the Settings page.
@@ -116,7 +116,7 @@ When no credentials exist in the database, visiting any page redirects to `/auth
 | `GET` | `/tasks` | All tasks — filterable by `status`, `project_id`, `has_due_date`, `is_recurring`, and free-text `q` search |
 | `GET` | `/tasks/{id}/edit` | Edit form for a single task |
 | `GET` | `/projects` | Projects list with optional `show` and `has_due_date` filters |
-| `GET` | `/projects/{id}` | Project detail — tasks grouped by GTD status |
+| `GET` | `/projects/{id}` | Project detail — tasks grouped by status |
 | `GET` | `/projects/{id}/edit` | Edit form for a single project |
 | `GET` | `/settings` | Settings page — API key management |
 
@@ -181,17 +181,17 @@ directly into the named volume's mount point on the host:
 
 ```bash
 # Find the volume's mount point
-docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}'
+docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}'
 
 # Copy the backup there (may require sudo on Linux)
-sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"
+sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"
 ```
 
 See [docs/api.md](docs/api.md) for full export endpoint documentation.
 
 ## CLI
 
-The GTD CLI provides command-line access to the running GTD TODOs server.
+The MST CLI provides command-line access to the running MySimpleTodos server.
 
 ### Install
 
@@ -202,29 +202,29 @@ The GTD CLI provides command-line access to the running GTD TODOs server.
 ### First-Time Setup
 
 ```bash
-gtd config init
+mst config init
 ```
 
 ### Commands
 
 | Command | Description |
 |---|---|
-| `gtd today` | Show overdue + due-today tasks |
-| `gtd inbox` | Show inbox tasks |
-| `gtd tasks` | List/filter all tasks |
-| `gtd add "Buy milk"` | Quick-add a task |
-| `gtd complete 42` | Complete a task |
-| `gtd reopen 42` | Reopen a completed task |
-| `gtd edit 42 --status next_action` | Edit task fields |
-| `gtd projects` | List projects |
-| `gtd project 1` | Show project detail |
-| `gtd export tasks` | Export tasks (JSON/CSV) |
-| `gtd export projects` | Export projects (JSON/CSV) |
-| `gtd report` | Daily GTD focus report |
-| `gtd health` | Check server connectivity |
-| `gtd config init` | Interactive config setup |
-| `gtd config show` | Print current config |
-| `gtd config set KEY VALUE` | Set a config value |
+| `mst today` | Show overdue + due-today tasks |
+| `mst inbox` | Show inbox tasks |
+| `mst tasks` | List/filter all tasks |
+| `mst add "Buy milk"` | Quick-add a task |
+| `mst complete 42` | Complete a task |
+| `mst reopen 42` | Reopen a completed task |
+| `mst edit 42 --status next_action` | Edit task fields |
+| `mst projects` | List projects |
+| `mst project 1` | Show project detail |
+| `mst export tasks` | Export tasks (JSON/CSV) |
+| `mst export projects` | Export projects (JSON/CSV) |
+| `mst report` | Daily focus report |
+| `mst health` | Check server connectivity |
+| `mst config init` | Interactive config setup |
+| `mst config show` | Print current config |
+| `mst config set KEY VALUE` | Set a config value |
 
 Global flags: `--server URL`, `--plain`, `--version`.
 
@@ -271,7 +271,7 @@ docker build .
   - `db.py` — SQLite engine and session management.
   - `seed.py` — Sample data seeding for local development.
   - `logging_config.py` — Structured logging setup.
-- `cli/` — GTD CLI package: command-line interface for the server.
+- `cli/` — MST CLI package: command-line interface for the server.
 - `scripts/` — Utility scripts (e.g. `install-cli.sh`, `backup-db.sh`).
 - `tests/` — Pytest suite covering routes, services, auth, security, search, and more.
 - `docs/` — Human-readable API, LLM integration, and planning documentation.
@@ -283,5 +283,5 @@ docker build .
 - [docs/llm-integration.md](docs/llm-integration.md)
 - [.github/skills/todo-api/SKILL.md](.github/skills/todo-api/SKILL.md)
 - [.github/skills/todo-data-model/SKILL.md](.github/skills/todo-data-model/SKILL.md)
-- [.github/skills/gtd-cli/SKILL.md](.github/skills/gtd-cli/SKILL.md)
+- [.github/skills/mst-cli/SKILL.md](.github/skills/mst-cli/SKILL.md)
 - [cli/README.md](cli/README.md)

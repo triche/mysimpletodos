@@ -1,12 +1,12 @@
 ---
 name: todo-data-model
-description: Reasoning about task and project semantics — GTD statuses, due dates, recurrence, and notes.
+description: Reasoning about task and project semantics — statuses, due dates, recurrence, and notes.
 ---
 # TODO Data Model Skill
 
-Use this skill when reasoning about task and project semantics in GTD TODOs.
+Use this skill when reasoning about task and project semantics in MySimpleTodos.
 
-## GTD Statuses
+## Task Statuses
 
 - `inbox`: captured but not clarified.
 - `next_action`: ready to do.
@@ -47,7 +47,7 @@ Use this skill when reasoning about task and project semantics in GTD TODOs.
 
 - Table: `api_keys`
 - Fields: `id`, `name` (user label), `key_hash` (SHA-256 hex digest, unique), `key_suffix` (last 6 chars for display), `created_at`, `last_used_at`.
-- Plaintext key format: `gtd_<64-hex-chars>` (32 random bytes).
+- Plaintext key format: `mst_<64-hex-chars>` (32 random bytes).
 - Only the hash is stored — the plaintext is shown once at creation.
 - `last_used_at` is updated on each successful API key authentication.
 - Maximum 10 active keys per instance.

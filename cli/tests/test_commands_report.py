@@ -7,7 +7,7 @@ from datetime import date, timedelta
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 BASE = "http://test:8080"
 
@@ -78,16 +78,16 @@ def _mock_endpoints():
 
 @respx.mock
 def test_report_generates_markdown(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert result.exit_code == 0
-    assert f"## GTD Focus Report — {TODAY.isoformat()}" in result.output
+    assert f"## Focus Report — {TODAY.isoformat()}" in result.output
 
 
 @respx.mock
 def test_report_hard_landscape_section(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "### Do First" in result.output
@@ -96,7 +96,7 @@ def test_report_hard_landscape_section(runner, monkeypatch):
 
 @respx.mock
 def test_report_overdue_tasks(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "Overdue report" in result.output
@@ -104,7 +104,7 @@ def test_report_overdue_tasks(runner, monkeypatch):
 
 @respx.mock
 def test_report_next_actions_table(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "### Next Actions" in result.output
@@ -114,7 +114,7 @@ def test_report_next_actions_table(runner, monkeypatch):
 
 @respx.mock
 def test_report_waiting_for_with_days(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "### Waiting For" in result.output
@@ -124,7 +124,7 @@ def test_report_waiting_for_with_days(runner, monkeypatch):
 
 @respx.mock
 def test_report_inbox_count(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "### Inbox (1 tasks to clarify)" in result.output
@@ -133,26 +133,26 @@ def test_report_inbox_count(runner, monkeypatch):
 
 @respx.mock
 def test_report_tomorrow_flag(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     tomorrow = (TODAY + timedelta(days=1)).isoformat()
     result = runner.invoke(cli, ["report", "--tomorrow"])
     assert result.exit_code == 0
-    assert f"## GTD Focus Report — {tomorrow}" in result.output
+    assert f"## Focus Report — {tomorrow}" in result.output
 
 
 @respx.mock
 def test_report_custom_date(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report", "--date", "2026-04-01"])
     assert result.exit_code == 0
-    assert "## GTD Focus Report — 2026-04-01" in result.output
+    assert "## Focus Report — 2026-04-01" in result.output
 
 
 @respx.mock
 def test_report_project_name_resolution(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "Work Project" in result.output
@@ -161,7 +161,7 @@ def test_report_project_name_resolution(runner, monkeypatch):
 
 @respx.mock
 def test_report_completed_count(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     _mock_endpoints()
     result = runner.invoke(cli, ["report"])
     assert "### Previous Day" in result.output

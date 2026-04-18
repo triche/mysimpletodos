@@ -1,4 +1,4 @@
-"""View commands: gtd today, gtd inbox."""
+"""View commands: mst today, mst inbox."""
 
 from __future__ import annotations
 
@@ -6,15 +6,15 @@ from datetime import date
 
 import click
 
-from gtd_cli.client import GTDClient
-from gtd_cli.config import get_api_key, get_server_url
-from gtd_cli.display import render_task_table
+from mst_cli.client import MSTClient
+from mst_cli.config import get_api_key, get_server_url
+from mst_cli.display import render_task_table
 
 
-def _make_client(ctx: click.Context) -> GTDClient:
+def _make_client(ctx: click.Context) -> MSTClient:
     server_url = get_server_url(ctx.obj.get("server"))
     api_key = get_api_key()
-    return GTDClient(server_url, api_key)
+    return MSTClient(server_url, api_key)
 
 
 @click.command()

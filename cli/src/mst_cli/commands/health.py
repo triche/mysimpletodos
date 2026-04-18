@@ -1,11 +1,11 @@
-"""Health command: gtd health."""
+"""Health command: mst health."""
 
 from __future__ import annotations
 
 import click
 
-from gtd_cli.client import GTDClient
-from gtd_cli.config import get_api_key, get_server_url
+from mst_cli.client import MSTClient
+from mst_cli.config import get_api_key, get_server_url
 
 
 @click.command()
@@ -15,7 +15,7 @@ def health(ctx: click.Context) -> None:
     server_url = get_server_url(ctx.obj.get("server"))
     api_key = get_api_key()
     try:
-        client = GTDClient(server_url, api_key)
+        client = MSTClient(server_url, api_key)
         result = client.health()
         if result.get("status") == "ok":
             click.echo(click.style(f"✓ Server is healthy ({server_url})", fg="green"))

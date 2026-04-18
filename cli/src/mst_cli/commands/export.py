@@ -1,4 +1,4 @@
-"""Export commands: gtd export tasks, gtd export projects."""
+"""Export commands: mst export tasks, mst export projects."""
 
 from __future__ import annotations
 
@@ -6,14 +6,14 @@ from pathlib import Path
 
 import click
 
-from gtd_cli.client import GTDClient
-from gtd_cli.config import get_api_key, get_server_url
+from mst_cli.client import MSTClient
+from mst_cli.config import get_api_key, get_server_url
 
 
-def _make_client(ctx: click.Context) -> GTDClient:
+def _make_client(ctx: click.Context) -> MSTClient:
     server_url = get_server_url(ctx.obj.get("server"))
     api_key = get_api_key()
-    return GTDClient(server_url, api_key)
+    return MSTClient(server_url, api_key)
 
 
 @click.group("export")
@@ -29,7 +29,7 @@ def export_group() -> None:
     type=click.Choice(["json", "csv"]),
     help="Output format.",
 )
-@click.option("--status", default=None, help="Filter by GTD status.")
+@click.option("--status", default=None, help="Filter by task status.")
 @click.option("--output", default=None, type=click.Path(), help="Write to file instead of stdout.")
 @click.pass_context
 def export_tasks(ctx: click.Context, fmt: str, status: str | None, output: str | None) -> None:

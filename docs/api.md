@@ -6,7 +6,7 @@
 - `GET /inbox`: Inbox page showing tasks with `inbox` status and a quick-add form.
 - `GET /today`: Today page showing overdue tasks and tasks due today.
 - `GET /projects`: Projects list showing all non-archived projects with task counts.
-- `GET /projects/{project_id}`: Project detail page with tasks grouped by GTD status.
+- `GET /projects/{project_id}`: Project detail page with tasks grouped by task status.
 - `GET /tasks`: All tasks page with filtering and search.
 - `GET /tasks/{task_id}/edit`: Edit form for a single task.
 
@@ -26,13 +26,13 @@
 
 ### Session Cookie (Browser)
 
-Authenticate via the passkey login flow. A signed `gtd_session` cookie is set after successful authentication.
+Authenticate via the passkey login flow. A signed `mst_session` cookie is set after successful authentication.
 
 ### API Key (Programmatic Access)
 
 Include the key in the `Authorization` header:
 
-    Authorization: Bearer gtd_your_key_here
+    Authorization: Bearer mst_your_key_here
 
 API keys grant access to all protected routes (same scope as session cookies). API keys cannot be used to access the Settings page or manage other keys — those routes require a session cookie.
 
@@ -58,7 +58,7 @@ All routes except `/health`, `/auth/*`, and `/static/*` require an authenticated
 
 ### Session Cookie
 
-- Name: `gtd_session`
+- Name: `mst_session`
 - `HttpOnly`, `SameSite=Lax`, `Secure` (when origin is HTTPS)
 - Signed with `itsdangerous.TimestampSigner` using `AUTH_SECRET_KEY`
 - Max age configurable via `AUTH_SESSION_MAX_AGE` (default 7 days)
@@ -240,7 +240,7 @@ Lists all non-archived projects. Each project shows:
 
 ### `GET /projects/{project_id}`
 
-Shows project metadata and all tasks assigned to that project, grouped by GTD status:
+Shows project metadata and all tasks assigned to that project, grouped by task status:
 
 - Inbox, Next Action, Waiting For, Scheduled, Someday / Maybe, Done
 
@@ -259,7 +259,7 @@ Displays all tasks with optional filtering and text search. Supports the followi
 | Parameter | Values | Description |
 |---|---|---|
 | `q` | free text | Case-insensitive search across title and notes |
-| `status` | `inbox`, `next_action`, `waiting_for`, `scheduled`, `someday_maybe`, `done` | Filter by exact GTD status |
+| `status` | `inbox`, `next_action`, `waiting_for`, `scheduled`, `someday_maybe`, `done` | Filter by exact task status |
 | `project_id` | integer or `none` | Filter by project ID; use `none` for tasks without a project |
 | `has_due_date` | `yes`, `no` | Filter by presence or absence of a due date |
 | `is_recurring` | `yes`, `no` | Filter by recurring flag |
@@ -321,7 +321,7 @@ Lifecycle events (startup, shutdown, database initialisation) and export actions
 
 ### `GET /export/tasks.csv`
 
-Returns all tasks as a CSV file. Accepts an optional `status` query parameter to filter by GTD status.
+Returns all tasks as a CSV file. Accepts an optional `status` query parameter to filter by task status.
 
 Response headers:
 
@@ -394,8 +394,8 @@ If the container is not available for `docker compose cp`, copy directly into th
 
 ```bash
 # Find the volume mount point
-docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}'
+docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}'
 
 # Copy (may require sudo on Linux)
-sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"
+sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"
 ```

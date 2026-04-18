@@ -1,22 +1,22 @@
-"""Task commands: gtd tasks, add, complete, reopen, edit."""
+"""Task commands: mst tasks, add, complete, reopen, edit."""
 
 from __future__ import annotations
 
 import click
 
-from gtd_cli.client import GTDClient
-from gtd_cli.config import get_api_key, get_server_url
-from gtd_cli.display import render_task_table
+from mst_cli.client import MSTClient
+from mst_cli.config import get_api_key, get_server_url
+from mst_cli.display import render_task_table
 
 
-def _make_client(ctx: click.Context) -> GTDClient:
+def _make_client(ctx: click.Context) -> MSTClient:
     server_url = get_server_url(ctx.obj.get("server"))
     api_key = get_api_key()
-    return GTDClient(server_url, api_key)
+    return MSTClient(server_url, api_key)
 
 
 @click.command("tasks")
-@click.option("--status", default=None, help="Filter by GTD status.")
+@click.option("--status", default=None, help="Filter by task status.")
 @click.option("--search", default=None, help="Search tasks by text (client-side).")
 @click.option("--project", default=None, type=int, help="Filter by project ID.")
 @click.option("--due", default=None, type=click.Choice(["yes", "no"]), help="Filter by due date.")
@@ -102,7 +102,7 @@ QUICK_UPDATE_FIELDS = {"status", "due_date", "project_id"}
 @click.command()
 @click.argument("task_id", type=int)
 @click.option("--title", default=None, help="New title.")
-@click.option("--status", default=None, help="New GTD status.")
+@click.option("--status", default=None, help="New task status.")
 @click.option("--due", default=None, help="Due date (YYYY-MM-DD or empty to clear).")
 @click.option("--project", "project_id", default=None, help="Project ID (or empty to clear).")
 @click.option("--notes", default=None, help="Notes (Markdown).")

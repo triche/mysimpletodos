@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ---------------------------------------------------------------------------
-# backup-db.sh — Back up and restore the GTD TODOs SQLite database
+# backup-db.sh — Back up and restore the MySimpleTodos SQLite database
 #
 # Commands:
 #   backup  [DEST]   Copy the DB from the container (default: backups/todo-<timestamp>.db)
@@ -13,7 +13,7 @@ set -euo pipefail
 #   -h, --help       Show this help message
 # ---------------------------------------------------------------------------
 
-CONTAINER="gtd-todos-app"
+CONTAINER="mysimpletodos-app"
 SERVICE="todo-app"
 REMOTE_DB="/data/todo.db"
 BACKUP_DIR="./backups"

@@ -16,7 +16,7 @@ def _default_secret_key() -> str:
 
 @dataclass(slots=True)
 class Settings:
-    app_name: str = "GTD TODOs"
+    app_name: str = "MySimpleTodos"
     app_env: str = "development"
     host: str = "0.0.0.0"
     port: int = 8080
@@ -27,7 +27,7 @@ class Settings:
     auth_secret_key: str = field(default_factory=_default_secret_key)
     auth_session_max_age: int = 604800  # 7 days
     webauthn_rp_id: str = "localhost"
-    webauthn_rp_name: str = "GTD TODOs"
+    webauthn_rp_name: str = "MySimpleTodos"
     webauthn_origin: str = "http://localhost:8080"
 
     @property
@@ -41,7 +41,7 @@ class Settings:
 @lru_cache
 def get_settings() -> Settings:
     return Settings(
-        app_name=os.getenv("APP_NAME", "GTD TODOs"),
+        app_name=os.getenv("APP_NAME", "MySimpleTodos"),
         app_env=os.getenv("APP_ENV", "development"),
         host=os.getenv("APP_HOST", "0.0.0.0"),
         port=int(os.getenv("APP_PORT", "8080")),
@@ -53,6 +53,6 @@ def get_settings() -> Settings:
         auth_secret_key=os.getenv("AUTH_SECRET_KEY", _default_secret_key()),
         auth_session_max_age=int(os.getenv("AUTH_SESSION_MAX_AGE", "604800")),
         webauthn_rp_id=os.getenv("WEBAUTHN_RP_ID", "localhost"),
-        webauthn_rp_name=os.getenv("WEBAUTHN_RP_NAME", "GTD TODOs"),
+        webauthn_rp_name=os.getenv("WEBAUTHN_RP_NAME", "MySimpleTodos"),
         webauthn_origin=os.getenv("WEBAUTHN_ORIGIN", "http://localhost:8080"),
     )

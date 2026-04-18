@@ -1,4 +1,4 @@
-"""Tests for Phase 2: Core GTD workflow routes."""
+"""Tests for Phase 2: Core task workflow routes."""
 
 from datetime import date
 

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GTD TODOs</title>
-<link rel="icon" type="image/png" href="gtd-todos-logo.png">
+<title>MySimpleTodos</title>
+<link rel="icon" type="image/png" href="mst-logo.png">
 <style>
   :root {
     --bg: #ffffff;
@@ -96,15 +96,15 @@
 <body>
 
 <header class="page-title">
-  <img src="gtd-todos-logo.png" alt="GTD TODOs logo" width="48" height="48">
-  <h1>GTD TODOs</h1>
+  <img src="mst-logo.png" alt="MySimpleTodos logo" width="48" height="48">
+  <h1>MySimpleTodos</h1>
 </header>
 
-<p>GTD TODOs is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around GTD task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.</p>
+<p>MySimpleTodos is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.</p>
 
 <h2>Features</h2>
 <ul>
-  <li><strong>GTD workflow</strong>: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.</li>
+  <li><strong>Task workflow</strong>: Inbox, Next Action, Waiting For, Scheduled, Someday/Maybe, and Done statuses.</li>
   <li><strong>Projects</strong>: Group tasks under projects with their own notes, due dates, and completion state.</li>
   <li><strong>Recurring tasks</strong>: Daily, weekly, monthly, or custom-interval recurrence. Completing a recurring task advances its due date instead of marking it done.</li>
   <li><strong>Markdown notes</strong>: Task and project notes are stored as raw Markdown and rendered as safe HTML.</li>
@@ -141,12 +141,12 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
 <p>The container listens internally on port 8080 but is mapped to <strong>port 8081</strong> on the host: <code>http://localhost:8081</code>. The compose file sets <code>WEBAUTHN_ORIGIN</code> to <code>http://localhost:8081</code> by default to match.</p>
 
 <h2>Authentication</h2>
-<p>GTD TODOs supports single-user passkey (WebAuthn) authentication. On first visit a passkey is registered, and subsequent access requires authenticating with that passkey.</p>
+<p>MySimpleTodos supports single-user passkey (WebAuthn) authentication. On first visit a passkey is registered, and subsequent access requires authenticating with that passkey.</p>
 
 <h3>Environment Variables</h3>
 <table>
   <tr><th>Variable</th><th>Purpose</th><th>Default</th></tr>
-  <tr><td><code>APP_NAME</code></td><td>Application display name</td><td><code>GTD TODOs</code></td></tr>
+  <tr><td><code>APP_NAME</code></td><td>Application display name</td><td><code>MySimpleTodos</code></td></tr>
   <tr><td><code>APP_ENV</code></td><td>Environment (<code>development</code> / <code>production</code>)</td><td><code>development</code></td></tr>
   <tr><td><code>APP_HOST</code></td><td>Bind address</td><td><code>0.0.0.0</code></td></tr>
   <tr><td><code>APP_PORT</code></td><td>Listen port</td><td><code>8080</code></td></tr>
@@ -156,14 +156,14 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
   <tr><td><code>AUTH_SECRET_KEY</code></td><td>Secret for signing session cookies</td><td><em>auto-generated</em></td></tr>
   <tr><td><code>AUTH_SESSION_MAX_AGE</code></td><td>Session cookie max age in seconds</td><td><code>604800</code> (7 days)</td></tr>
   <tr><td><code>WEBAUTHN_RP_ID</code></td><td>WebAuthn Relying Party ID (domain)</td><td><code>localhost</code></td></tr>
-  <tr><td><code>WEBAUTHN_RP_NAME</code></td><td>Human-readable RP name</td><td><code>GTD TODOs</code></td></tr>
+  <tr><td><code>WEBAUTHN_RP_NAME</code></td><td>Human-readable RP name</td><td><code>MySimpleTodos</code></td></tr>
   <tr><td><code>WEBAUTHN_ORIGIN</code></td><td>Expected origin for WebAuthn ceremonies</td><td><code>http://localhost:8080</code></td></tr>
 </table>
 
 <h3>API Keys (Programmatic Access)</h3>
 <p>API keys allow CLI tools and scripts to access the API without a browser session. Generate keys from the Settings page (gear icon in the nav bar) after logging in with a passkey.</p>
 <p>Use the key in the <code>Authorization</code> header:</p>
-<pre><code>curl -H "Authorization: Bearer gtd_your_key_here" http://localhost:8080/export/tasks.json</code></pre>
+<pre><code>curl -H "Authorization: Bearer mst_your_key_here" http://localhost:8080/export/tasks.json</code></pre>
 <p>Keys are shown in full once at creation time and stored as SHA-256 hashes. Up to 10 keys can be active. Revoke keys from the Settings page.</p>
 
 <h3>Disabling Auth for Local Development</h3>
@@ -184,7 +184,7 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
   <tr><td><code>GET</code></td><td><code>/tasks</code></td><td>All tasks — filterable by <code>status</code>, <code>project_id</code>, <code>has_due_date</code>, <code>is_recurring</code>, and free-text <code>q</code> search</td></tr>
   <tr><td><code>GET</code></td><td><code>/tasks/{id}/edit</code></td><td>Edit form for a single task</td></tr>
   <tr><td><code>GET</code></td><td><code>/projects</code></td><td>Projects list with optional <code>show</code> and <code>has_due_date</code> filters</td></tr>
-  <tr><td><code>GET</code></td><td><code>/projects/{id}</code></td><td>Project detail — tasks grouped by GTD status</td></tr>
+  <tr><td><code>GET</code></td><td><code>/projects/{id}</code></td><td>Project detail — tasks grouped by status</td></tr>
   <tr><td><code>GET</code></td><td><code>/projects/{id}/edit</code></td><td>Edit form for a single project</td></tr>
   <tr><td><code>GET</code></td><td><code>/settings</code></td><td>Settings page — API key management</td></tr>
 </table>
@@ -240,41 +240,41 @@ docker compose up</code></pre>
 
 <p>If the container is not available for <code>docker compose cp</code>, you can copy directly into the named volume's mount point on the host:</p>
 <pre><code># Find the volume's mount point
-docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}'
+docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}'
 
 # Copy the backup there (may require sudo on Linux)
-sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"</code></pre>
+sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"</code></pre>
 
 <p>See <a href="api.md">docs/api.md</a> for full export endpoint documentation.</p>
 
 <h2>CLI</h2>
-<p>The GTD CLI provides command-line access to the running GTD TODOs server.</p>
+<p>The MST CLI provides command-line access to the running MySimpleTodos server.</p>
 
 <h3>Install</h3>
 <pre><code>./scripts/install-cli.sh</code></pre>
 
 <h3>First-Time Setup</h3>
-<pre><code>gtd config init</code></pre>
+<pre><code>mst config init</code></pre>
 
 <h3>Commands</h3>
 <table>
   <tr><th>Command</th><th>Description</th></tr>
-  <tr><td><code>gtd today</code></td><td>Show overdue + due-today tasks</td></tr>
-  <tr><td><code>gtd inbox</code></td><td>Show inbox tasks</td></tr>
-  <tr><td><code>gtd tasks</code></td><td>List/filter all tasks</td></tr>
-  <tr><td><code>gtd add "Buy milk"</code></td><td>Quick-add a task</td></tr>
-  <tr><td><code>gtd complete 42</code></td><td>Complete a task</td></tr>
-  <tr><td><code>gtd reopen 42</code></td><td>Reopen a completed task</td></tr>
-  <tr><td><code>gtd edit 42 --status next_action</code></td><td>Edit task fields</td></tr>
-  <tr><td><code>gtd projects</code></td><td>List projects</td></tr>
-  <tr><td><code>gtd project 1</code></td><td>Show project detail</td></tr>
-  <tr><td><code>gtd export tasks</code></td><td>Export tasks (JSON/CSV)</td></tr>
-  <tr><td><code>gtd export projects</code></td><td>Export projects (JSON/CSV)</td></tr>
-  <tr><td><code>gtd report</code></td><td>Daily GTD focus report</td></tr>
-  <tr><td><code>gtd health</code></td><td>Check server connectivity</td></tr>
-  <tr><td><code>gtd config init</code></td><td>Interactive config setup</td></tr>
-  <tr><td><code>gtd config show</code></td><td>Print current config</td></tr>
-  <tr><td><code>gtd config set KEY VALUE</code></td><td>Set a config value</td></tr>
+  <tr><td><code>mst today</code></td><td>Show overdue + due-today tasks</td></tr>
+  <tr><td><code>mst inbox</code></td><td>Show inbox tasks</td></tr>
+  <tr><td><code>mst tasks</code></td><td>List/filter all tasks</td></tr>
+  <tr><td><code>mst add "Buy milk"</code></td><td>Quick-add a task</td></tr>
+  <tr><td><code>mst complete 42</code></td><td>Complete a task</td></tr>
+  <tr><td><code>mst reopen 42</code></td><td>Reopen a completed task</td></tr>
+  <tr><td><code>mst edit 42 --status next_action</code></td><td>Edit task fields</td></tr>
+  <tr><td><code>mst projects</code></td><td>List projects</td></tr>
+  <tr><td><code>mst project 1</code></td><td>Show project detail</td></tr>
+  <tr><td><code>mst export tasks</code></td><td>Export tasks (JSON/CSV)</td></tr>
+  <tr><td><code>mst export projects</code></td><td>Export projects (JSON/CSV)</td></tr>
+  <tr><td><code>mst report</code></td><td>Daily focus report</td></tr>
+  <tr><td><code>mst health</code></td><td>Check server connectivity</td></tr>
+  <tr><td><code>mst config init</code></td><td>Interactive config setup</td></tr>
+  <tr><td><code>mst config show</code></td><td>Print current config</td></tr>
+  <tr><td><code>mst config set KEY VALUE</code></td><td>Set a config value</td></tr>
 </table>
 
 <p>Global flags: <code>--server URL</code>, <code>--plain</code>, <code>--version</code>.</p>
@@ -313,7 +313,7 @@ sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --form
       <li><strong>logging_config.py</strong> — Structured logging setup.</li>
     </ul>
   </li>
-  <li><strong>cli/</strong> — GTD CLI package: command-line interface for the server.</li>
+  <li><strong>cli/</strong> — MST CLI package: command-line interface for the server.</li>
   <li><strong>scripts/</strong> — Utility scripts (e.g. <code>install-cli.sh</code>, <code>backup-db.sh</code>).</li>
   <li><strong>tests/</strong> — Pytest suite covering routes, services, auth, security, search, and more.</li>
   <li><strong>docs/</strong> — Human-readable API, LLM integration, and planning documentation.</li>
@@ -326,7 +326,7 @@ sudo cp ./backup-todo.db "$(docker volume inspect gtd-todos_todo_app_data --form
   <li><a href="llm-integration.md">docs/llm-integration.md</a></li>
   <li><a href="../.github/skills/todo-api/SKILL.md">.github/skills/todo-api/SKILL.md</a></li>
   <li><a href="../.github/skills/todo-data-model/SKILL.md">.github/skills/todo-data-model/SKILL.md</a></li>
-  <li><a href="../.github/skills/gtd-cli/SKILL.md">.github/skills/gtd-cli/SKILL.md</a></li>
+  <li><a href="../.github/skills/mst-cli/SKILL.md">.github/skills/mst-cli/SKILL.md</a></li>
   <li><a href="../cli/README.md">cli/README.md</a></li>
 </ul>
 

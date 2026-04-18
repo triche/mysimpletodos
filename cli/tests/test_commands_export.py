@@ -5,14 +5,14 @@ from __future__ import annotations
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 BASE = "http://test:8080"
 
 
 @respx.mock
 def test_export_tasks_json_stdout(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     data = [{"id": 1, "title": "Test"}]
     respx.get(f"{BASE}/export/tasks.json").mock(
         return_value=httpx.Response(200, json=data)
@@ -24,7 +24,7 @@ def test_export_tasks_json_stdout(runner, monkeypatch):
 
 @respx.mock
 def test_export_tasks_csv_stdout(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     csv_data = "id,title\n1,Test\n"
     respx.get(f"{BASE}/export/tasks.csv").mock(
         return_value=httpx.Response(200, text=csv_data)
@@ -36,7 +36,7 @@ def test_export_tasks_csv_stdout(runner, monkeypatch):
 
 @respx.mock
 def test_export_tasks_with_status_filter(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.get(f"{BASE}/export/tasks.json", params={"status": "inbox"}).mock(
         return_value=httpx.Response(200, json=[])
     )
@@ -47,7 +47,7 @@ def test_export_tasks_with_status_filter(runner, monkeypatch):
 
 @respx.mock
 def test_export_tasks_to_file(runner, monkeypatch, tmp_path):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     data = [{"id": 1, "title": "Test"}]
     respx.get(f"{BASE}/export/tasks.json").mock(
         return_value=httpx.Response(200, json=data)
@@ -61,7 +61,7 @@ def test_export_tasks_to_file(runner, monkeypatch, tmp_path):
 
 @respx.mock
 def test_export_projects_json(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     data = [{"id": 1, "name": "Proj"}]
     respx.get(f"{BASE}/export/projects.json").mock(
         return_value=httpx.Response(200, json=data)

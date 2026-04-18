@@ -93,7 +93,7 @@ class TestCSRFMiddleware:
         resp = auth_client.post(
             "/tasks",
             data={"title": "Test"},
-            cookies={"gtd_session": "fake"},  # won't pass auth but CSRF runs first
+            cookies={"mst_session": "fake"},  # won't pass auth but CSRF runs first
         )
         assert resp.status_code == 403
 
@@ -131,7 +131,7 @@ class TestCSRFMiddleware:
         resp = auth_client.post(
             "/tasks",
             data={"title": "Test"},
-            headers={"Authorization": "Bearer gtd_fakekey"},
+            headers={"Authorization": "Bearer mst_fakekey"},
         )
         # Should not be 403 (CSRF) — will be 401 (invalid key) or similar
         assert resp.status_code != 403
@@ -191,7 +191,7 @@ class TestAPIKeyFlashCookie:
         assert resp.status_code == 303
         location = resp.headers.get("location", "")
         assert "new_key" not in location
-        assert "gtd_" not in location
+        assert "mst_" not in location
 
     def test_flash_cookie_set_on_create(self, client: TestClient):
         """Creating an API key should set a _flash_key cookie."""
@@ -216,7 +216,7 @@ class TestAPIKeyFlashCookie:
         # Read settings page
         resp = client.get("/settings", cookies={"_flash_key": flash})
         assert resp.status_code == 200
-        assert "gtd_" in resp.text  # Key shown on page
+        assert "mst_" in resp.text  # Key shown on page
         # Cookie should be deleted
         set_cookie = resp.headers.get("set-cookie", "")
         assert "_flash_key" in set_cookie

@@ -16,7 +16,7 @@ from app.db import get_engine
 
 logger = logging.getLogger("app")
 
-COOKIE_NAME = "gtd_session"
+COOKIE_NAME = "mst_session"
 
 # Paths that never require authentication.
 _EXEMPT_PREFIXES = ("/health", "/auth/", "/static/")
@@ -67,7 +67,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         auth_header = request.headers.get("authorization", "")
         if auth_header.lower().startswith("bearer "):
             token = auth_header[7:]  # strip "Bearer "
-            if token.startswith("gtd_"):
+            if token.startswith("mst_"):
                 from app.services.api_key_service import verify_key
 
                 engine = get_engine()

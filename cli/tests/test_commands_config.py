@@ -2,28 +2,28 @@
 
 from __future__ import annotations
 
-from gtd_cli.config import load_config
-from gtd_cli.main import cli
+from mst_cli.config import load_config
+from mst_cli.main import cli
 
 
 def test_config_init_creates_file(runner, isolated_config):
-    result = runner.invoke(cli, ["config", "init"], input="http://test:8080\ngtd_secret\n")
+    result = runner.invoke(cli, ["config", "init"], input="http://test:8080\nmst_secret\n")
     assert result.exit_code == 0
     assert "✓ Configuration saved" in result.output
     config = load_config()
     assert config["server"]["url"] == "http://test:8080"
-    assert config["auth"]["api_key"] == "gtd_secret"
+    assert config["auth"]["api_key"] == "mst_secret"
 
 
 def test_config_show_masked_key(runner, isolated_config):
-    from gtd_cli.config import save_config
+    from mst_cli.config import save_config
 
-    save_config({"server": {"url": "http://x:8080"}, "auth": {"api_key": "gtd_abcdef123456"}})
+    save_config({"server": {"url": "http://x:8080"}, "auth": {"api_key": "mst_abcdef123456"}})
     result = runner.invoke(cli, ["config", "show"])
     assert result.exit_code == 0
     assert "http://x:8080" in result.output
-    assert "gtd_••••••123456" in result.output
-    assert "gtd_abcdef123456" not in result.output
+    assert "mst_••••••123456" in result.output
+    assert "mst_abcdef123456" not in result.output
 
 
 def test_config_show_no_key(runner, isolated_config):
@@ -40,17 +40,17 @@ def test_config_set_server_url(runner, isolated_config):
 
 
 def test_config_set_api_key(runner, isolated_config):
-    result = runner.invoke(cli, ["config", "set", "auth.api_key", "gtd_newkey"])
+    result = runner.invoke(cli, ["config", "set", "auth.api_key", "mst_newkey"])
     assert result.exit_code == 0
     config = load_config()
-    assert config["auth"]["api_key"] == "gtd_newkey"
+    assert config["auth"]["api_key"] == "mst_newkey"
 
 
 def test_help_shows_ascii_banner(runner):
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
     assert "██████╗" in result.output
-    assert "Getting Things Done" in result.output
+    assert "MySimpleTodos" in result.output
 
 
 def test_subcommand_help_no_banner(runner):

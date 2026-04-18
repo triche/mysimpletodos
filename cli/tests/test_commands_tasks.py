@@ -5,7 +5,7 @@ from __future__ import annotations
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 SAMPLE_TASKS = [
     {
@@ -28,7 +28,7 @@ BASE = "http://test:8080"
 
 @respx.mock
 def test_tasks_list_renders_table(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=SAMPLE_TASKS))
     result = runner.invoke(cli, ["tasks"])
     assert result.exit_code == 0
@@ -39,7 +39,7 @@ def test_tasks_list_renders_table(runner, monkeypatch):
 
 @respx.mock
 def test_tasks_filter_by_status(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.get(f"{BASE}/export/tasks.json", params={"status": "inbox"}).mock(
         return_value=httpx.Response(200, json=[SAMPLE_TASKS[0]])
     )
@@ -51,7 +51,7 @@ def test_tasks_filter_by_status(runner, monkeypatch):
 
 @respx.mock
 def test_tasks_search_filters_client_side(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=SAMPLE_TASKS))
     result = runner.invoke(cli, ["tasks", "--search", "milk"])
     assert result.exit_code == 0
@@ -61,7 +61,7 @@ def test_tasks_search_filters_client_side(runner, monkeypatch):
 
 @respx.mock
 def test_tasks_plain_output(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=SAMPLE_TASKS))
     result = runner.invoke(cli, ["--plain", "tasks"])
     assert result.exit_code == 0
@@ -71,7 +71,7 @@ def test_tasks_plain_output(runner, monkeypatch):
 
 @respx.mock
 def test_add_task(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks").mock(
         return_value=httpx.Response(303, headers={"location": "/inbox"})
     )
@@ -83,7 +83,7 @@ def test_add_task(runner, monkeypatch):
 
 @respx.mock
 def test_add_task_with_project(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks").mock(
         return_value=httpx.Response(303, headers={"location": "/inbox"})
     )
@@ -95,7 +95,7 @@ def test_add_task_with_project(runner, monkeypatch):
 
 @respx.mock
 def test_complete_task(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.post(f"{BASE}/tasks/1/complete").mock(
         return_value=httpx.Response(303, headers={"location": "/inbox"})
     )
@@ -106,7 +106,7 @@ def test_complete_task(runner, monkeypatch):
 
 @respx.mock
 def test_reopen_task(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.post(f"{BASE}/tasks/1/reopen").mock(
         return_value=httpx.Response(303, headers={"location": "/inbox"})
     )
@@ -117,7 +117,7 @@ def test_reopen_task(runner, monkeypatch):
 
 @respx.mock
 def test_edit_task_status_uses_quick_update(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks/1/quick-update").mock(
         return_value=httpx.Response(303, headers={"location": "/tasks"})
     )
@@ -130,7 +130,7 @@ def test_edit_task_status_uses_quick_update(runner, monkeypatch):
 
 @respx.mock
 def test_edit_task_title_uses_full_update(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks/1/update").mock(
         return_value=httpx.Response(303, headers={"location": "/tasks"})
     )
@@ -141,7 +141,7 @@ def test_edit_task_title_uses_full_update(runner, monkeypatch):
 
 @respx.mock
 def test_edit_task_due_date(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks/1/quick-update").mock(
         return_value=httpx.Response(303, headers={"location": "/tasks"})
     )
@@ -154,7 +154,7 @@ def test_edit_task_due_date(runner, monkeypatch):
 
 @respx.mock
 def test_edit_task_clear_due_date(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     route = respx.post(f"{BASE}/tasks/1/quick-update").mock(
         return_value=httpx.Response(303, headers={"location": "/tasks"})
     )
@@ -165,7 +165,7 @@ def test_edit_task_clear_due_date(runner, monkeypatch):
 
 @respx.mock
 def test_complete_nonexistent_shows_error(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.post(f"{BASE}/tasks/999/complete").mock(
         return_value=httpx.Response(404, text="Not found")
     )

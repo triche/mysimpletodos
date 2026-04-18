@@ -21,7 +21,7 @@ The repository includes `.github` customization assets so a new agent conversati
 - `GET /inbox` — inbox page with quick-add form.
 - `GET /today` — tasks due today and overdue tasks.
 - `GET /projects` — project list with task counts.
-- `GET /projects/{id}` — project detail with tasks grouped by GTD status.
+- `GET /projects/{id}` — project detail with tasks grouped by status.
 - `GET /tasks` — all tasks page with filtering and search.
 - `GET /tasks/{id}/edit` — edit form for a task.
 - `POST /tasks` — create a task (form field: `title`, optional `project_id`).
@@ -85,40 +85,40 @@ API keys enable programmatic access without a browser session. Generate keys fro
 Use the key in the `Authorization` header:
 
 ```bash
-curl -H "Authorization: Bearer gtd_your_key_here" http://localhost:8080/export/tasks.json
+curl -H "Authorization: Bearer mst_your_key_here" http://localhost:8080/export/tasks.json
 ```
 
 This is the recommended way for LLM agents to authenticate when fetching task and project data.
 
-## GTD CLI
+## MST CLI
 
-The `gtd` command-line tool provides an alternative to direct HTTP calls or SQLite queries. Install it with `./scripts/install-cli.sh` and configure with `gtd config init`.
+The `mst` command-line tool provides an alternative to direct HTTP calls or SQLite queries. Install it with `./scripts/install-cli.sh` and configure with `mst config init`.
 
-This is the recommended way for agents to interact with the GTD TODOs app:
+This is the recommended way for agents to interact with the MySimpleTodos app:
 
 ```bash
 # Check connectivity
-gtd health
+mst health
 
-# Generate a structured GTD report (agent adds recommendations)
-gtd report
+# Generate a structured task report (agent adds recommendations)
+mst report
 
 # Export data
-gtd export tasks
-gtd export projects
+mst export tasks
+mst export projects
 
 # Manage tasks
-gtd add "Task title"
-gtd complete 42
+mst add "Task title"
+mst complete 42
 ```
 
-The CLI reads the API key from `~/.gtd/config.toml`, so agents don't need the key in memory.
+The CLI reads the API key from `~/.mst/config.toml`, so agents don't need the key in memory.
 
-See `.github/skills/gtd-cli/SKILL.md` for the full agent skill reference.
+See `.github/skills/mst-cli/SKILL.md` for the full agent skill reference.
 
 ## Companion Assets
 
 - `.github/copilot-instructions.md`
 - `.github/skills/todo-api/SKILL.md`
 - `.github/skills/todo-data-model/SKILL.md`
-- `.github/skills/gtd-cli/SKILL.md`
+- `.github/skills/mst-cli/SKILL.md`

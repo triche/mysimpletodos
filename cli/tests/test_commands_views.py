@@ -7,7 +7,7 @@ from datetime import date, timedelta
 import httpx
 import respx
 
-from gtd_cli.main import cli
+from mst_cli.main import cli
 
 BASE = "http://test:8080"
 
@@ -41,7 +41,7 @@ TASKS = [
 
 @respx.mock
 def test_today_shows_overdue_and_due_today(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["today"])
     assert result.exit_code == 0
@@ -53,7 +53,7 @@ def test_today_shows_overdue_and_due_today(runner, monkeypatch):
 
 @respx.mock
 def test_today_excludes_done_tasks(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["today"])
     assert "Done task" not in result.output
@@ -61,7 +61,7 @@ def test_today_excludes_done_tasks(runner, monkeypatch):
 
 @respx.mock
 def test_today_excludes_no_due_date(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["today"])
     assert "No due date" not in result.output
@@ -69,7 +69,7 @@ def test_today_excludes_no_due_date(runner, monkeypatch):
 
 @respx.mock
 def test_today_shows_count_summary(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json").mock(return_value=httpx.Response(200, json=TASKS))
     result = runner.invoke(cli, ["today"])
     assert "1 overdue" in result.output
@@ -78,7 +78,7 @@ def test_today_shows_count_summary(runner, monkeypatch):
 
 @respx.mock
 def test_inbox_shows_inbox_tasks(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     inbox_tasks = [{
         "id": 5, "title": "No due date", "status": "inbox",
         "due_date": None, "project_id": None, "is_recurring": False,
@@ -93,7 +93,7 @@ def test_inbox_shows_inbox_tasks(runner, monkeypatch):
 
 @respx.mock
 def test_inbox_shows_count(runner, monkeypatch):
-    monkeypatch.setenv("GTD_SERVER_URL", BASE)
+    monkeypatch.setenv("MST_SERVER_URL", BASE)
     respx.get(f"{BASE}/export/tasks.json", params={"status": "inbox"}).mock(
         return_value=httpx.Response(200, json=[{
             "id": 1, "title": "T", "status": "inbox",

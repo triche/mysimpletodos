@@ -17,7 +17,7 @@
   </head>
   <body>
     <nav class="top-nav">
-      <a href="/inbox" class="nav-brand"><img src="{{ url_for('static', path='favicon.svg') }}" alt="" class="nav-logo">{{ app_name | default('GTD TODOs') }}</a>
+      <a href="/inbox" class="nav-brand"><img src="{{ url_for('static', path='favicon.svg') }}" alt="" class="nav-logo">{{ app_name | default('MySimpleTodos') }}</a>
       {% set nc = nav_counts | default({}) %}
       <ul class="nav-links">
         <li><a href="/inbox">Inbox{% if nc.inbox %} <span class="nav-badge nav-badge-green">{{ nc.inbox }}</span>{% endif %}</a></li>
