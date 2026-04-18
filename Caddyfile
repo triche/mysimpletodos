@@ -1,0 +1,3 @@
+mysimpletodos.com {
+	reverse_proxy todo-app:8080
+}
