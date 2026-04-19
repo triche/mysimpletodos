@@ -34,6 +34,10 @@ everyone else. Users are invited by an admin — there is no self-registration.
 - **Project.name** has a global `UNIQUE` constraint.
 - **In-memory challenge store** is a single global variable.
 - **Middleware** checks "is someone authenticated?" — doesn't know *who*.
+- **Backup/Restore** (`GET /backup/download`, `POST /backup/restore`) operates on the
+  raw SQLite file — the entire database for all users. The CLI exposes this via
+  `mst backup download` and `mst backup restore`. The Settings page provides a UI.
+  The old `scripts/backup-db.sh` Docker-only shell script has been removed.
 
 ---
 
@@ -247,6 +251,42 @@ The same pattern applies to `create_task`, `get_task`, `update_task`, `complete_
 `user_id` matches — never trust the ID alone. This prevents horizontal privilege
 escalation.
 
+### Backup & Restore Service
+
+The current backup endpoints (`GET /backup/download`, `POST /backup/restore`) operate
+on the raw SQLite file. In multi-user mode, **per-user export/import replaces
+whole-database backup** for regular users:
+
+- `create_user_backup(session, user_id)` → exports the user's tasks, projects,
+  and API key metadata as a JSON archive (no credentials or other users' data).
+- `restore_user_backup(session, user_id, data)` → validates and imports the JSON
+  archive, creating/updating only rows belonging to that user. Duplicate handling:
+  match by original ID; on conflict, update in place.
+
+The JSON archive format:
+
+```json
+{
+  "format": "mst-user-backup-v1",
+  "exported_at": "2026-04-18T12:00:00",
+  "user": {"username": "alice", "display_name": "Alice"},
+  "tasks": [ ... ],
+  "projects": [ ... ]
+}
+```
+
+**Admin-only:** The raw SQLite download/restore endpoints remain available but are
+restricted to admin users. They are hidden from the Settings page for non-admins.
+
+**Regular users** see only user-scoped backup/restore on the Settings page:
+
+- "Download My Data" → `GET /backup/download?scope=user` → JSON archive of their data.
+- "Restore My Data" → `POST /backup/restore` with JSON upload → imports only their data.
+
+One user's backup **cannot** contain or affect another user's rows. The service
+validates that every row in the archive either has no `user_id` (single-user format,
+assigned to the importing user) or matches the authenticated user's ID.
+
 ### Route Layer
 
 Routes extract `user_id` from `request.state.user_id` and pass it to service
@@ -348,7 +388,12 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
 2. Filter all queries by `user_id`.
 3. Ownership checks on `get_*` / `update_*` / `delete_*`.
 4. Update route handlers to pass `request.state.user_id`.
-5. Tests: user A cannot see/modify user B's data (horizontal privilege tests).
+5. Convert backup service: `create_user_backup(session, user_id)` exports only
+   that user's tasks/projects as JSON; `restore_user_backup(session, user_id, data)`
+   imports only their data. Restrict raw SQLite backup/restore to admin role.
+6. Tests: user A cannot see/modify user B's data (horizontal privilege tests);
+   user A's backup download contains none of user B's data; restoring user A's
+   backup does not create/modify any rows belonging to user B.
 
 ### Phase 4: Login Flow for Multi-User
 
@@ -399,8 +444,10 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
 2. Rate-limit invite token validation (prevent brute force).
 3. Add `user_id` context to structured logging.
 4. Update `AUTH_DISABLED` test fixtures to set user context.
-5. Update all docs, skills, and `README.md`.
-6. Full regression test run.
+5. Verify backup isolation: admin-only raw SQLite endpoints; per-user JSON
+   backup/restore for regular users; no cross-user data leakage.
+6. Update all docs, skills, and `README.md`.
+7. Full regression test run.
 
 ---
 
@@ -416,6 +463,10 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
   expected user count (< 10), this is adequate. Document this as a scaling boundary.
 - **Challenge store.** Moving from a single variable to a dict with TTL prevents
   challenge confusion between concurrent auth ceremonies.
+- **Backup isolation.** Regular users can only export/import their own data as a
+  JSON archive — never the raw SQLite file. The raw database download/restore
+  endpoints are restricted to admin users. A user's backup archive is validated
+  on import to ensure it contains no rows belonging to other users.
 
 ---
 
@@ -430,5 +481,7 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
 - **Email notifications.** Invite links are shared out-of-band (copy-paste). No email
   integration planned.
 - **Shared projects / task delegation.** Explicitly excluded — each user is fully isolated.
+- **Cross-user backup restore.** An admin importing a user's JSON backup as a
+  different user (migration use-case) is not supported initially.
 - **Separate admin UI layout.** Admin pages share `base.html` with the full nav bar
   so admins can seamlessly switch between their tasks and user management.

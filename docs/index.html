@@ -111,6 +111,7 @@
   <li><strong>Quick updates</strong>: Inline status, due date, and project changes from list views without opening the edit form.</li>
   <li><strong>Search</strong>: Full-text search across tasks with filters for status, project, due date, and recurrence.</li>
   <li><strong>Export</strong>: CSV and JSON export for tasks and projects.</li>
+  <li><strong>Backup &amp; Restore</strong>: Download and upload SQLite database snapshots from the Settings page, API, or CLI.</li>
   <li><strong>Passkey auth</strong>: Single-user WebAuthn authentication with API key support for programmatic access.</li>
   <li><strong>CSRF protection</strong>: Double-submit cookie middleware on all mutation routes.</li>
 </ul>
@@ -186,7 +187,7 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
   <tr><td><code>GET</code></td><td><code>/projects</code></td><td>Projects list with optional <code>show</code> and <code>has_due_date</code> filters</td></tr>
   <tr><td><code>GET</code></td><td><code>/projects/{id}</code></td><td>Project detail — tasks grouped by status</td></tr>
   <tr><td><code>GET</code></td><td><code>/projects/{id}/edit</code></td><td>Edit form for a single project</td></tr>
-  <tr><td><code>GET</code></td><td><code>/settings</code></td><td>Settings page — API key management</td></tr>
+  <tr><td><code>GET</code></td><td><code>/settings</code></td><td>Settings page — API key management, database backup and restore</td></tr>
 </table>
 
 <h3>Task Mutations</h3>
@@ -207,6 +208,13 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
   <tr><td><code>POST</code></td><td><code>/projects/{id}/complete</code></td><td>Mark a project as completed</td></tr>
 </table>
 
+<h3>Backup</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td><code>GET</code></td><td><code>/backup/download</code></td><td>Download the SQLite database as a <code>.db</code> file</td></tr>
+  <tr><td><code>POST</code></td><td><code>/backup/restore</code></td><td>Upload a <code>.db</code> file to replace the current database (100 MB max)</td></tr>
+</table>
+
 <h3>Export</h3>
 <table>
   <tr><th>Method</th><th>Path</th><th>Description</th></tr>
@@ -225,26 +233,32 @@ export AUTH_SECRET_KEY=&lt;value&gt;</code></pre>
 <p>See <a href="api.md">docs/api.md</a> for full API documentation including form fields and data model details.</p>
 
 <h2>Backup and Restore</h2>
-<p>The SQLite database file is stored in the Docker volume at <code>/data/todo.db</code>. Back it up by copying the file or using the export endpoints:</p>
-<pre><code># Copy the database file directly
-docker compose cp todo-app:/data/todo.db ./backup-todo.db
+<p>MySimpleTodos provides built-in backup and restore via the Settings page, the API, and the CLI. All methods use SQLite's online backup API for a crash-safe snapshot.</p>
 
-# Or export data as CSV / JSON (use port 8081 for Docker Compose)
-curl -o tasks.csv http://localhost:8081/export/tasks.csv
-curl -o projects.json http://localhost:8081/export/projects.json</code></pre>
+<h3>Settings Page</h3>
+<p>Visit <strong>Settings</strong> (gear icon) to download a database snapshot or upload a previous backup to restore. Restoring validates the uploaded file (SQLite header + integrity check) before replacing the database.</p>
 
-<p>To restore, copy the backup into the running container and restart:</p>
-<pre><code>docker compose down
-docker compose cp ./backup-todo.db todo-app:/data/todo.db
-docker compose up</code></pre>
+<h3>API Endpoints</h3>
+<pre><code># Download a backup
+curl -H "Authorization: Bearer mst_your_key" -o backup.db http://localhost:8080/backup/download
 
-<p>If the container is not available for <code>docker compose cp</code>, you can copy directly into the named volume's mount point on the host:</p>
-<pre><code># Find the volume's mount point
-docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}'
+# Restore from a backup
+curl -H "Authorization: Bearer mst_your_key" -F file=@backup.db http://localhost:8080/backup/restore</code></pre>
 
-# Copy the backup there (may require sudo on Linux)
-sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"</code></pre>
+<h3>CLI</h3>
+<pre><code># Download a backup to the current directory
+mst backup download
 
+# Download to a specific path
+mst backup download --output /path/to/backup.db
+
+# Restore from a local file (prompts for confirmation)
+mst backup restore backup.db
+
+# Restore without confirmation prompt
+mst backup restore --yes backup.db</code></pre>
+
+<p>You can also export data as CSV/JSON via the export endpoints or <code>mst export</code> commands.</p>
 <p>See <a href="api.md">docs/api.md</a> for full export endpoint documentation.</p>
 
 <h2>CLI</h2>
@@ -270,6 +284,8 @@ sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --
   <tr><td><code>mst project 1</code></td><td>Show project detail</td></tr>
   <tr><td><code>mst export tasks</code></td><td>Export tasks (JSON/CSV)</td></tr>
   <tr><td><code>mst export projects</code></td><td>Export projects (JSON/CSV)</td></tr>
+  <tr><td><code>mst backup download</code></td><td>Download database backup</td></tr>
+  <tr><td><code>mst backup restore FILE</code></td><td>Restore database from backup</td></tr>
   <tr><td><code>mst report</code></td><td>Daily focus report</td></tr>
   <tr><td><code>mst health</code></td><td>Check server connectivity</td></tr>
   <tr><td><code>mst config init</code></td><td>Interactive config setup</td></tr>
@@ -314,7 +330,7 @@ sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --
     </ul>
   </li>
   <li><strong>cli/</strong> — MST CLI package: command-line interface for the server.</li>
-  <li><strong>scripts/</strong> — Utility scripts (e.g. <code>install-cli.sh</code>, <code>backup-db.sh</code>).</li>
+  <li><strong>scripts/</strong> — Utility scripts (e.g. <code>install-cli.sh</code>).</li>
   <li><strong>tests/</strong> — Pytest suite covering routes, services, auth, security, search, and more.</li>
   <li><strong>docs/</strong> — Human-readable API, LLM integration, and planning documentation.</li>
   <li><strong>.github/</strong> — Copilot instructions, skills, and CI workflow.</li>

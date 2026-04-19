@@ -19,6 +19,7 @@ from app.db import init_db
 from app.logging_config import configure_logging
 from app.routes import templates
 from app.routes.auth import router as auth_router
+from app.routes.backup import router as backup_router
 from app.routes.export import router as export_router
 from app.routes.health import router as health_router
 from app.routes.pages import router as pages_router
@@ -121,6 +122,7 @@ def create_app() -> FastAPI:
     app.include_router(tasks_router)
     app.include_router(export_router)
     app.include_router(settings_router)
+    app.include_router(backup_router)
 
     # Auth middleware — must be added after routes so it wraps them.
     app.add_middleware(AuthMiddleware)

@@ -36,6 +36,7 @@ def settings_page(
         "api_keys": keys,
         "new_key": new_key,
         "error": request.query_params.get("error"),
+        "restored": request.query_params.get("restored"),
         "auth_disabled": get_settings().auth_disabled,
     })
     resp = templates.TemplateResponse(request, "settings.html", ctx)

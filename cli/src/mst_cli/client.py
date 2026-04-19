@@ -101,3 +101,33 @@ class MSTClient:
         """Export projects in the given format. Returns raw response text."""
         resp = self.get(f"/export/projects.{fmt}")
         return resp.text
+
+    def download_backup(self) -> bytes:
+        """Download a database backup. Returns raw bytes."""
+        try:
+            resp = self._client.get("/backup/download")
+        except httpx.ConnectError as exc:
+            raise click.ClickException(f"Cannot connect to server: {exc}") from exc
+        except httpx.TimeoutException as exc:
+            raise click.ClickException(f"Request timed out: {exc}") from exc
+        if resp.status_code >= 400:
+            raise click.ClickException(
+                f"Server returned {resp.status_code}: {resp.text[:200]}"
+            )
+        return resp.content
+
+    def upload_restore(self, data: bytes, filename: str = "backup.db") -> None:
+        """Upload a database backup for restore."""
+        try:
+            resp = self._client.post(
+                "/backup/restore",
+                files={"file": (filename, data, "application/octet-stream")},
+            )
+        except httpx.ConnectError as exc:
+            raise click.ClickException(f"Cannot connect to server: {exc}") from exc
+        except httpx.TimeoutException as exc:
+            raise click.ClickException(f"Request timed out: {exc}") from exc
+        if resp.status_code >= 400:
+            raise click.ClickException(
+                f"Server returned {resp.status_code}: {resp.text[:200]}"
+            )

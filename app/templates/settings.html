@@ -67,5 +67,28 @@
   {% else %}
   <p class="empty-state">No API keys yet.</p>
   {% endif %}
+
+  <hr class="settings-divider">
+
+  <h2>Database Backup</h2>
+  <p class="settings-description">Download a snapshot of your database or restore from a previous backup.</p>
+
+  {% if restored %}
+  <div class="settings-new-key">
+    <strong>Database restored successfully.</strong> The application is now using the uploaded database.
+  </div>
+  {% endif %}
+
+  <div class="settings-backup-actions">
+    <a href="/backup/download" class="btn-primary">Download Backup</a>
+  </div>
+
+  <h3>Restore from Backup</h3>
+  <p class="settings-description">Upload a previously downloaded <code>.db</code> file to replace the current database. <strong>This will overwrite all existing data.</strong></p>
+  <form class="settings-create-form" action="/backup/restore" method="post" enctype="multipart/form-data">
+    {{ csrf_hidden_input(request) }}
+    <input type="file" name="file" accept=".db" required>
+    <button type="submit" class="btn-secondary" onclick="return confirm('This will replace ALL current data. Are you sure?')">Restore Backup</button>
+  </form>
 </section>
 {% endblock %}
