@@ -13,6 +13,7 @@ MySimpleTodos is a local-first task application for a single laptop user. FastAP
 - **Quick updates**: Inline status, due date, and project changes from list views without opening the edit form.
 - **Search**: Full-text search across tasks with filters for status, project, due date, and recurrence.
 - **Export**: CSV and JSON export for tasks and projects.
+- **Backup & Restore**: Download and upload SQLite database snapshots from the Settings page, API, or CLI.
 - **Passkey auth**: Single-user WebAuthn authentication with API key support for programmatic access.
 - **CSRF protection**: Double-submit cookie middleware on all mutation routes.
 
@@ -118,7 +119,7 @@ When no credentials exist in the database, visiting any page redirects to `/auth
 | `GET` | `/projects` | Projects list with optional `show` and `has_due_date` filters |
 | `GET` | `/projects/{id}` | Project detail — tasks grouped by status |
 | `GET` | `/projects/{id}/edit` | Edit form for a single project |
-| `GET` | `/settings` | Settings page — API key management |
+| `GET` | `/settings` | Settings page — API key management, database backup and restore |
 
 ### Task Mutations
 
@@ -137,6 +138,13 @@ When no credentials exist in the database, visiting any page redirects to `/auth
 | `POST` | `/projects` | Create a new project |
 | `POST` | `/projects/{id}/update` | Update project name, description, notes, and due date |
 | `POST` | `/projects/{id}/complete` | Mark a project as completed |
+
+### Backup
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/backup/download` | Download the SQLite database as a `.db` file |
+| `POST` | `/backup/restore` | Upload a `.db` file to replace the current database (100 MB max) |
 
 ### Export
 
@@ -157,35 +165,44 @@ See [docs/api.md](docs/api.md) for full API documentation including form fields 
 
 ## Backup and Restore
 
-The SQLite database file is stored in the Docker volume at `/data/todo.db`. Back it up by copying the file or using the export endpoints:
+MySimpleTodos provides built-in backup and restore via the Settings page, the API, and the CLI. All methods use SQLite's online backup API for a crash-safe snapshot.
+
+### Settings Page
+
+Visit **Settings** (gear icon) to download a database snapshot or upload a previous backup to restore. Restoring validates the uploaded file (SQLite header + integrity check) before replacing the database.
+
+### API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/backup/download` | Download the SQLite database as a `.db` file |
+| `POST` | `/backup/restore` | Upload a `.db` file to replace the current database |
 
 ```bash
-# Copy the database file directly
-docker compose cp todo-app:/data/todo.db ./backup-todo.db
+# Download a backup
+curl -H "Authorization: Bearer mst_your_key" -o backup.db http://localhost:8080/backup/download
 
-# Or export data as CSV / JSON (use port 8081 for Docker Compose)
-curl -o tasks.csv http://localhost:8081/export/tasks.csv
-curl -o projects.json http://localhost:8081/export/projects.json
+# Restore from a backup
+curl -H "Authorization: Bearer mst_your_key" -F file=@backup.db http://localhost:8080/backup/restore
 ```
 
-To restore, copy the backup into the running container and restart:
+### CLI
 
 ```bash
-docker compose down
-docker compose cp ./backup-todo.db todo-app:/data/todo.db
-docker compose up
+# Download a backup to the current directory
+mst backup download
+
+# Download to a specific path
+mst backup download --output /path/to/backup.db
+
+# Restore from a local file (prompts for confirmation)
+mst backup restore backup.db
+
+# Restore without confirmation prompt
+mst backup restore --yes backup.db
 ```
 
-If the container is not available for `docker compose cp`, you can copy
-directly into the named volume's mount point on the host:
-
-```bash
-# Find the volume's mount point
-docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}'
-
-# Copy the backup there (may require sudo on Linux)
-sudo cp ./backup-todo.db "$(docker volume inspect mysimpletodos_todo_app_data --format '{{ .Mountpoint }}')/todo.db"
-```
+You can also export data as CSV/JSON via the export endpoints or `mst export` commands.
 
 See [docs/api.md](docs/api.md) for full export endpoint documentation.
 
@@ -220,6 +237,8 @@ mst config init
 | `mst project 1` | Show project detail |
 | `mst export tasks` | Export tasks (JSON/CSV) |
 | `mst export projects` | Export projects (JSON/CSV) |
+| `mst backup download` | Download database backup |
+| `mst backup restore FILE` | Restore database from backup |
 | `mst report` | Daily focus report |
 | `mst health` | Check server connectivity |
 | `mst config init` | Interactive config setup |
@@ -272,7 +291,7 @@ docker build .
   - `seed.py` — Sample data seeding for local development.
   - `logging_config.py` — Structured logging setup.
 - `cli/` — MST CLI package: command-line interface for the server.
-- `scripts/` — Utility scripts (e.g. `install-cli.sh`, `backup-db.sh`).
+- `scripts/` — Utility scripts (e.g. `install-cli.sh`).
 - `tests/` — Pytest suite covering routes, services, auth, security, search, and more.
 - `docs/` — Human-readable API, LLM integration, and planning documentation.
 - `.github/` — Copilot instructions, skills, and CI workflow.

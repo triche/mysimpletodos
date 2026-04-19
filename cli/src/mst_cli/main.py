@@ -5,6 +5,7 @@ from __future__ import annotations
 import click
 
 from mst_cli import __version__
+from mst_cli.commands.backup import backup_group
 from mst_cli.commands.config_cmd import config_group
 from mst_cli.commands.export import export_group
 from mst_cli.commands.health import health
@@ -58,4 +59,5 @@ cli.add_command(edit)
 cli.add_command(projects)
 cli.add_command(project)
 cli.add_command(export_group, "export")
+cli.add_command(backup_group, "backup")
 cli.add_command(report)
