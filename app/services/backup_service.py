@@ -86,3 +86,12 @@ def restore_from_bytes(data: bytes) -> None:
     except Exception:
         tmp_path.unlink(missing_ok=True)
         raise
+
+    # Force the running app to reconnect to the new database file
+    # and re-apply schema migrations in case the backup is from an
+    # older version.
+    from app.db import get_engine, init_db
+
+    engine = get_engine()
+    engine.dispose()
+    init_db()

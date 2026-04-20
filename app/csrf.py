@@ -82,15 +82,36 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     # ------------------------------------------------------------------
     @staticmethod
     async def _extract_form_token(request: Request) -> str:
-        """Read the csrf_token field from a URL-encoded form body."""
+        """Read the csrf_token field from a URL-encoded or multipart form body."""
         content_type = request.headers.get("content-type", "")
-        if (
-            "application/x-www-form-urlencoded" in content_type
-            or "multipart/form-data" in content_type
-        ):
+        if "application/x-www-form-urlencoded" in content_type:
             body = await request.body()
             params = parse_qs(body.decode("utf-8", errors="replace"))
             return params.get(CSRF_FIELD_NAME, [""])[0]
+        if "multipart/form-data" in content_type:
+            # For multipart uploads we cannot call request.form() because
+            # BaseHTTPMiddleware consumes the body stream and the downstream
+            # route handler would then receive an empty upload.  Instead,
+            # read the raw body (already buffered by BaseHTTPMiddleware) and
+            # scan for the csrf_token field which appears before any file
+            # data in the multipart stream.
+            body = await request.body()
+            text = body[:8192].decode("utf-8", errors="replace")
+            # Look for: Content-Disposition: form-data; name="csrf_token"\r\n\r\n<value>
+            marker = f'name="{CSRF_FIELD_NAME}"'
+            idx = text.find(marker)
+            if idx != -1:
+                # Skip past the marker and the blank line separator
+                rest = text[idx + len(marker):]
+                # Find the double newline that separates headers from value
+                sep = rest.find("\r\n\r\n")
+                if sep != -1:
+                    value_start = sep + 4
+                    # Value ends at the next boundary (starts with \r\n--)
+                    end = rest.find("\r\n--", value_start)
+                    if end != -1:
+                        return rest[value_start:end].strip()
+            return ""
         # Fall back to a custom header (useful for fetch-based JSON posts).
         return request.headers.get("x-csrf-token", "")
 

@@ -1,0 +1,15 @@
+# Production overlay — use with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Requires these env vars (via .env or environment):
+#   CADDY_SITE_ADDRESS=mysimpletodos.com
+#   WEBAUTHN_RP_ID=mysimpletodos.com
+#   WEBAUTHN_ORIGIN=https://mysimpletodos.com
+services:
+  caddy:
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      CADDY_HTTP_PORT: "80"
