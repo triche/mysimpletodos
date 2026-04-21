@@ -4,9 +4,9 @@ services:
     container_name: mysimpletodos-caddy
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "${CADDY_HTTP_PORT:-8080}:80"
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-:80}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -27,8 +27,8 @@ services:
       TZ: America/Chicago
       # Generate a secret: python -c "import secrets; print(secrets.token_hex(32))"
       AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:?Set AUTH_SECRET_KEY in .env or environment}
-      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-mysimpletodos.com}
-      WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN:-https://mysimpletodos.com}
+      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-localhost}
+      WEBAUTHN_ORIGIN: ${WEBAUTHN_ORIGIN:-http://localhost:8080}
     expose:
       - "8080"
     volumes:
