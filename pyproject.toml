@@ -36,6 +36,9 @@ packages = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+  "responsive: structural and CSS-contract tests for the adaptive UX plan",
+]
 
 [tool.ruff]
 target-version = "py312"

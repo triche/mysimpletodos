@@ -1,3 +1,18 @@
+/*
+ * Adaptive UX breakpoints (single source of truth — see
+ * docs/plans/Adaptive-Responsive-UX-Implementation-Plan.md).
+ *
+ * bp:sm — phone portrait        max-width: 599px
+ * bp:md — phone landscape /     max-width: 899px
+ *         small tablets
+ * bp:lg — desktop / large       min-width: 900px
+ *         tablets
+ *
+ * New @media rules MUST use only these pixel values (599, 899, 900).
+ * Component rules group their own responsive overrides; do not add
+ * one-off breakpoints.
+ */
+
 :root {
   --bg: #f0f4f8;
   --surface: rgba(248, 250, 252, 0.82);
@@ -9,6 +24,7 @@
   --accent-soft: #dbeafe;
   --shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
   --radius: 12px;
+  --tabbar-height: 56px;
 }
 
 * {
@@ -917,7 +933,7 @@ h1 {
   font-size: 0.95rem;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 899px) {
   .shell,
   .top-nav {
     width: min(100vw - 1.25rem, 100%);
@@ -1383,4 +1399,97 @@ h1 {
 /* Auth logo */
 [data-theme="dark"] .auth-logo img {
   filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4)) brightness(1.1);
+}
+/* --- Adaptive nav: bottom tab bar (sm) and inline sections (md/lg) --- */
+
+/* The inline section nav is just a wrapper for the link list inside .top-nav. */
+.nav-sections-inline {
+  display: contents;
+}
+
+/* The bottom tab bar is rendered fixed but hidden by default; activated at
+   the sm breakpoint via display override. Safe-area padding is declared here
+   so the tab bar renders correctly above the iOS home indicator whenever it
+   becomes visible. */
+.nav-tabbar {
+  display: none;
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 50;
+  border-top: 1px solid var(--line);
+  background: var(--surface-strong);
+  padding-block: 0.25rem;
+  padding-bottom: calc(0.25rem + env(safe-area-inset-bottom));
+  backdrop-filter: blur(20px);
+}
+
+.nav-tabbar .nav-links {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  list-style: none;
+}
+
+.nav-tabbar .nav-links > li {
+  flex: 1 1 0;
+  display: flex;
+}
+
+.nav-tabbar .nav-links a {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.25rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.nav-tabbar .nav-links a:hover {
+  color: var(--accent);
+}
+
+/* sm - phone portrait: hide inline section nav, show fixed bottom tab bar. */
+@media (max-width: 599px) {
+  .nav-sections-inline {
+    display: none;
+  }
+
+  .nav-tabbar {
+    display: flex;
+  }
+
+  /* Reserve space below content so the last item is not covered. */
+  .shell {
+    padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 1.5rem);
+  }
+
+  /* 44px touch targets for the utility cluster on phone. */
+  .nav-icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem;
+  }
+
+  /* 44px touch targets for tab bar slots. */
+  .nav-tabbar a {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .nav-tabbar button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Compact top bar on phone: brand + utility cluster only. */
+  .top-nav {
+    gap: 0.5rem;
+  }
 }
