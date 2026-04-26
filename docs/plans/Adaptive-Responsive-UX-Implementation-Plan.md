@@ -80,23 +80,40 @@ Use explicit, behavior-based breakpoints rather than ad hoc one-off fixes.
 Captured during Phase 0 audit; this is the working list of known offenders to
 fix in Phase 2. Update as new sources are discovered.
 
-1. `.top-nav` is a single flex row containing brand + 4 nav links + 3 utility
-   icon buttons. Total intrinsic width exceeds 320px regardless of compression.
-2. `.nav-links` does not wrap and has no horizontal scroll affordance.
-3. Nav badge counters render inline and prevent text truncation of link
-   labels.
-4. Task list rows in `tasks_list.html` and `today.html` use horizontal flex
-   layouts whose metadata (project chip, due date, recurrence) does not
-   stack.
-5. Inline selectors in `_task_inline_selectors.html` use fixed-width selects
-   that exceed narrow viewports.
-6. `project_detail.html` and `tasks_list.html` contain unwrapped tabular
-   structures.
-7. `task_edit.html` and `project_edit.html` forms use multi-column layouts
-   without single-column fallback.
-8. `.shell` may impose a `min-width` that prevents the body from shrinking.
-9. Long task titles and project names lack `overflow-wrap: anywhere` or
-   `min-width: 0` on flex children.
+Status legend: ✅ resolved (Phase 1 or 2) · ⏳ deferred · ❌ open.
+
+1. ✅ `.top-nav` is a single flex row containing brand + 4 nav links + 3
+   utility icon buttons. Resolved in Phase 1: section links move to the
+   bottom tab bar on `sm`; top bar shrinks to brand + utility cluster.
+2. ✅ `.nav-links` does not wrap and has no horizontal scroll affordance.
+   Resolved in Phase 1: replaced by a fixed bottom tab bar on `sm` with
+   four equal slots.
+3. ✅ Nav badge counters render inline and prevent text truncation of link
+   labels. Resolved in Phase 1: section labels live in their own
+   `nav-link-label` span and the bottom tab bar gives each badge its own
+   slot.
+4. ✅ Task list rows use horizontal flex layouts whose metadata (project
+   chip, due date, recurrence) does not stack. Resolved in Phase 2 (the
+   existing `md` rule wraps `.task-header` and stacks `.task-meta`; Phase 2
+   added `min-width: 0` and `overflow-wrap: anywhere` on `.task-title` so
+   long titles do not force overflow inside the flex parent).
+5. ✅ Inline selectors in `_task_inline_selectors.html` use fixed-width
+   selects that exceed narrow viewports. Resolved in Phase 2: at `sm` the
+   inline selectors expand to `width: 100%` with a 36px minimum height.
+6. ✅ `project_detail.html` and `tasks_list.html` contain unwrapped tabular
+   structures. Verified in Phase 2: those templates do not actually contain
+   `<table>` elements (rendered as `<ul>`/`<ol>`); the only `<table>` in
+   the app is the API keys list in `settings.html`, now wrapped in
+   `.table-scroll`.
+7. ✅ `task_edit.html` and `project_edit.html` forms use multi-column
+   layouts without single-column fallback. Resolved (already in place): the
+   `md` block collapses `.form-row` and `.panel-grid` to a single column.
+8. ✅ `.shell` may impose a `min-width` that prevents the body from
+   shrinking. Verified in Phase 2: `.shell` declares only width with
+   `min(...)` clamping, no `min-width`. Covered by the
+   `test_no_oversized_min_width_on_top_level_wrappers` CSS contract test.
+9. ✅ Long task titles and project names lack `overflow-wrap: anywhere` or
+   `min-width: 0` on flex children. Resolved in Phase 2 for `.task-title`.
 
 ## Target Navigation Behavior
 
