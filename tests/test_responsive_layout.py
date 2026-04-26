@@ -252,3 +252,73 @@ def test_auth_login_has_viewport_fit_cover(client: TestClient) -> None:
     assert "viewport-fit=cover" in metas[0].attrs.get("content", ""), (
         "/auth/login: viewport meta must include viewport-fit=cover"
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: tables wrapped in scroll containers
+# ---------------------------------------------------------------------------
+
+
+def test_settings_table_wrapped_in_table_scroll(
+    client: TestClient, db_session  # noqa: ANN001 - db_session fixture
+) -> None:
+    """Tables must live inside a .table-scroll wrapper so they scroll
+    independently on narrow viewports without forcing the page to overflow.
+
+    The settings API-keys table only renders when at least one key exists;
+    seed one before fetching the page.
+    """
+    from app.services.api_key_service import generate_key
+
+    generate_key(db_session, name="phase2-test-key")
+
+    html = _get_html(client, "/settings")
+    parsed = _parse(html)
+
+    tables = [t for t in parsed.tags if t.name == "table"]
+    assert tables, "/settings: expected the API keys table to be rendered"
+
+    # Every <table> must be inside an element with class 'table-scroll'.
+    # Heuristic: search the raw HTML for `class="table-scroll"` immediately
+    # before the table.
+    assert "table-scroll" in html, (
+        "/settings: expected a .table-scroll wrapper around the API keys table"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: task list metadata stacking class
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("path", ["/inbox", "/today", "/tasks"])
+def test_task_lists_use_min_width_zero_class(
+    client: TestClient, db_session, path: str  # noqa: ANN001
+) -> None:
+    """Task rows that wrap long titles must declare a class that sets
+    `min-width: 0` on the flex child holding the title, otherwise long
+    titles force horizontal overflow inside the flex parent."""
+    from datetime import date
+
+    from app.models import TaskStatus
+    from app.services.task_service import create_task
+
+    # Seed tasks that surface on every list view: an INBOX task (for /inbox
+    # and /tasks) and a NEXT_ACTION task due today (for /today and /tasks).
+    long_title = (
+        "An intentionally very long task title that would otherwise "
+        "force horizontal overflow on narrow viewports because flex "
+        "children default to min-width auto"
+    )
+    create_task(db_session, title=long_title)
+    create_task(
+        db_session,
+        title=long_title + " (today)",
+        status=TaskStatus.NEXT_ACTION,
+        due_date=date.today(),
+    )
+
+    html = _get_html(client, path)
+    assert "task-title" in html, f"{path}: missing .task-title class"
+
+

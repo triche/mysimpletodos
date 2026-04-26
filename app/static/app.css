@@ -207,6 +207,8 @@ h1 {
 
 .task-title {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: 500;
 }
 
@@ -1179,6 +1181,15 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+
+/* --- Table scroll wrapper --- */
+/* Wide tables (settings API keys, future task tables) live inside this
+   container so they scroll horizontally without forcing the whole page to
+   overflow on narrow viewports. */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* --- Nav icon buttons --- */
@@ -1491,5 +1502,50 @@ h1 {
   /* Compact top bar on phone: brand + utility cluster only. */
   .top-nav {
     gap: 0.5rem;
+  }
+
+  /* Inline quick-update selectors: full-width and touch-friendly so each
+     control is independently tappable on phone. */
+  .inline-selector {
+    width: 100%;
+  }
+
+  .inline-select,
+  .inline-date {
+    width: 100%;
+    min-height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .task-meta .inline-form {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Quick-add and settings create forms: stack input + button vertically
+     so the input has full width to type into. */
+  .quick-add,
+  .settings-create-form {
+    flex-wrap: wrap;
+  }
+
+  .quick-add input[type="text"],
+  .settings-create-form input[type="text"] {
+    flex: 1 1 100%;
+  }
+
+  /* Filter row: full-width controls; single column. */
+  .filter-group {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  /* Auth card: trim padding so 320px viewports do not clip content. */
+  .auth-container {
+    padding: 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.25rem;
   }
 }

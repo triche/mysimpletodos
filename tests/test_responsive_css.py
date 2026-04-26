@@ -206,3 +206,88 @@ def test_no_oversized_min_width_on_top_level_wrappers(css_text: str) -> None:
         "app.css: top-level wrappers declare oversized min-width outside lg:\n  "
         + "\n  ".join(offenders)
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: layout contract for narrow viewports
+# ---------------------------------------------------------------------------
+
+
+def _extract_block(text: str, opener_pattern: str) -> str:
+    """Return the body of the first CSS block whose header matches
+    `opener_pattern` (a regex). Empty string if not found."""
+    match = re.search(opener_pattern, text, re.IGNORECASE | re.DOTALL)
+    if not match:
+        return ""
+    start = match.end()
+    depth = 1
+    i = start
+    while i < len(text) and depth > 0:
+        ch = text[i]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        i += 1
+    return text[start : i - 1]
+
+
+def test_table_scroll_wrapper_rule_present(css_text: str) -> None:
+    """`.table-scroll` must declare horizontal-only overflow so wide tables
+    scroll inside the wrapper instead of forcing the page to scroll."""
+    body = _extract_block(css_text, r"\.table-scroll\s*\{")
+    assert body, "app.css: missing .table-scroll rule block"
+    assert "overflow-x" in body, (
+        "app.css: .table-scroll must declare overflow-x (auto|scroll)"
+    )
+
+
+def test_task_title_has_min_width_zero(css_text: str) -> None:
+    """`.task-title` lives inside a flex `.task-header`. Without
+    `min-width: 0`, long titles force the flex parent wider than the
+    viewport on narrow widths."""
+    # Find any rule whose selector list contains `.task-title` at the top
+    # level (not inside a media block we care about) and check for
+    # `min-width: 0`.
+    pattern = re.compile(r"([^{}]*\.task-title[^{}]*)\{([^}]*)\}", re.DOTALL)
+    found_min_width_zero = False
+    for m in pattern.finditer(css_text):
+        body = m.group(2)
+        if re.search(r"min-width\s*:\s*0\b", body):
+            found_min_width_zero = True
+            break
+    assert found_min_width_zero, (
+        "app.css: expected a .task-title rule declaring min-width: 0 "
+        "to prevent overflow inside flex .task-header"
+    )
+
+
+def test_inline_selectors_full_width_on_sm(css_text: str) -> None:
+    """Within the `sm` block, inline quick-update selectors must be allowed
+    to take the full available width so they remain touch-friendly."""
+    sm_block = _extract_block(
+        css_text,
+        r"@media[^{]*\(\s*max-width\s*:\s*599px\s*\)\s*\{",
+    )
+    assert sm_block, "app.css: missing sm media block"
+    # Look for a rule that targets .inline-select / .inline-date / .inline-form
+    # and declares either width: 100% or flex: 1 / min-width: 0.
+    pattern = re.compile(
+        r"(\.inline-select|\.inline-date|\.inline-form|\.inline-selector)"
+        r"[^{}]*\{([^}]*)\}",
+        re.DOTALL,
+    )
+    matches = list(pattern.finditer(sm_block))
+    assert matches, (
+        "app.css [sm]: expected inline-* rules sizing inline quick-update "
+        "controls for narrow viewports"
+    )
+    sizing_ok = any(
+        re.search(r"width\s*:\s*100%|flex\s*:\s*1", m.group(2))
+        for m in matches
+    )
+    assert sizing_ok, (
+        "app.css [sm]: expected inline-* rules to declare width: 100% "
+        "or flex: 1 for full-width inline selectors on phone"
+    )
+
