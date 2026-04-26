@@ -46,7 +46,7 @@ def test_nav_icons_inside_single_container(auth_enabled_client: TestClient) -> N
     assert resp.status_code == 200
     # Extract the nav-actions block (greedy within the nav)
     match = re.search(
-        r'<div\s+class="nav-actions">(.*?)</div>',
+        r'<div\s+class="[^"]*\bnav-actions\b[^"]*">(.*?)</div>',
         resp.text,
         re.DOTALL,
     )

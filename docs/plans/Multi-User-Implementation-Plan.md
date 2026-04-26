@@ -339,6 +339,61 @@ rebuilding the table, which is fine for the expected data volumes.
 
 ---
 
+## Deployment Environments
+
+Two environments are in active use. The implementation must work correctly in both.
+
+### Production — Hetzner VPS
+
+- Deployed via GitHub Actions ([`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml)):
+  `git pull origin main` → `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`.
+- The production overlay (`docker-compose.prod.yml`) adds port bindings 80/443/443-udp and
+  sets `CADDY_HTTP_PORT=80`. Caddy terminates TLS and reverse-proxies to the app on 8080.
+- SQLite DB is persisted in the **named Docker volume** `todo_app_data`, mounted at `/data`.
+- Production `.env` on the server supplies:
+  ```
+  AUTH_SECRET_KEY=<32-byte hex>
+  CADDY_SITE_ADDRESS=mysimpletodos.com
+  WEBAUTHN_RP_ID=mysimpletodos.com
+  WEBAUTHN_ORIGIN=https://mysimpletodos.com
+  ```
+- **Alembic migrations** run automatically at startup via `init_db()` (which calls
+  `alembic upgrade head`). The named volume persists data across redeploys — no manual
+  migration step is needed in CI.
+- **Passkey recovery:** if the browser-side passkey is lost (keychain cleared, new device),
+  clear `webauthn_credentials` via the DB exec method documented below and re-register at
+  `/auth/setup`. In multi-user mode this becomes `/admin/users/{id}/reinvite`.
+- **Raw SQLite backup/restore** must remain accessible to the admin via the Settings page
+  and `mst backup download/restore` — this is the primary DR mechanism on Hetzner.
+
+### Local Development — Docker Compose (single-compose file)
+
+- Started with: `docker compose up --build` (base file only, no prod overlay).
+- Caddy is exposed only on host port 8080; no TLS.
+- Typical local `.env` or environment:
+  ```
+  AUTH_DISABLED=true          # skip auth during dev
+  WEBAUTHN_RP_ID=localhost
+  WEBAUTHN_ORIGIN=http://localhost:8080
+  ```
+- SQLite DB lives in the same `todo_app_data` named volume (or `sqlite:///./data/todo.db`
+  if running outside Docker with `uv run uvicorn ...`).
+- For multi-user testing with auth enabled, set `AUTH_DISABLED=false` and use the
+  `/auth/setup` first-run flow at `http://localhost:8080`.
+
+### Environment Implications for This Implementation
+
+| Concern | Hetzner production | Local dev |
+|---|---|---|
+| Alembic runs on | Container startup (auto) | Container startup (auto) |
+| First admin setup | `/auth/setup` after first deploy | `/auth/setup` or `AUTH_DISABLED=true` |
+| TLS / Secure cookies | Yes — `WEBAUTHN_ORIGIN` starts with `https` | No — `http://localhost:8080` |
+| Data persistence | Named Docker volume `todo_app_data` | Named volume or local path |
+| Raw DB backup access | Admin only (Settings + CLI) | Unrestricted in dev |
+| WEBAUTHN_RP_ID | `mysimpletodos.com` | `localhost` |
+
+---
+
 ## Configuration Changes
 
 | Variable | Purpose | Default |
@@ -360,6 +415,10 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
 3. Create baseline migration that represents the current schema.
 4. Replace `_migrate_schema()` and `create_all()` with `alembic upgrade head`.
 5. Tests: existing test suite passes unchanged (Alembic creates schema in test DBs).
+
+**Deployment note:** `alembic upgrade head` is called inside `init_db()`, which runs at
+app startup. Both environments (Hetzner and local Docker) run migrations automatically on
+`docker compose up --build`. No manual SSH migration step is needed.
 
 ### Phase 1: User Model & Migration
 
@@ -448,6 +507,13 @@ No other new env vars needed. Existing `WEBAUTHN_*` variables continue to work.
    backup/restore for regular users; no cross-user data leakage.
 6. Update all docs, skills, and `README.md`.
 7. Full regression test run.
+8. **Deployment verification:**
+   - Test full flow on local Docker (`docker compose up --build`, `AUTH_DISABLED=false`).
+   - Verify Alembic runs cleanly on the Hetzner `todo_app_data` volume (existing data
+     migrated; no data loss).
+   - Confirm Hetzner passkey registration works end-to-end at `https://mysimpletodos.com/auth/setup`
+     after the first multi-user deploy.
+   - Update deploy runbook in `README.md` with multi-user first-run admin setup steps.
 
 ---
 
