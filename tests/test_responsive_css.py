@@ -291,3 +291,101 @@ def test_inline_selectors_full_width_on_sm(css_text: str) -> None:
         "or flex: 1 for full-width inline selectors on phone"
     )
 
+
+# ---------------------------------------------------------------------------
+# Phase 3: accessibility, motion, focus
+# ---------------------------------------------------------------------------
+
+
+NAV_FOCUS_SELECTORS = (
+    ".nav-icon-btn",
+    ".nav-brand",
+    ".nav-link",
+    ".nav-tabbar",
+)
+
+
+def test_nav_controls_have_focus_visible_styles(css_text: str) -> None:
+    """Every nav surface must declare a `:focus-visible` style so keyboard
+    users see where focus is. Hover-only styling is insufficient."""
+    missing: list[str] = []
+    for selector in NAV_FOCUS_SELECTORS:
+        # Match selector followed by `:focus-visible` somewhere in a rule
+        # selector list. Escape the leading dot for the regex.
+        pattern = re.compile(
+            re.escape(selector) + r"[^,{}]*:focus-visible",
+        )
+        if not pattern.search(css_text):
+            missing.append(selector)
+    assert not missing, (
+        "app.css: missing :focus-visible styles for nav surfaces: "
+        f"{missing}. Keyboard users need a visible focus indicator on "
+        "every nav control."
+    )
+
+
+def test_focus_visible_declares_visible_indicator(css_text: str) -> None:
+    """`:focus-visible` rules must declare an outline or box-shadow so the
+    indicator is actually visible (not just `outline: none`)."""
+    pattern = re.compile(
+        r"([^{}]*:focus-visible[^{}]*)\{([^}]*)\}",
+        re.DOTALL,
+    )
+    rules = list(pattern.finditer(css_text))
+    assert rules, "app.css: no :focus-visible rules found"
+    for m in rules:
+        body = m.group(2)
+        # Must declare some visible indicator.
+        has_indicator = bool(
+            re.search(r"outline\s*:\s*[^;]*(?<!none)\s*;", body)
+            or re.search(r"box-shadow\s*:", body)
+        )
+        # And must not strip the outline without replacing it.
+        strips_outline = bool(re.search(r"outline\s*:\s*none\s*;", body)) or bool(
+            re.search(r"outline\s*:\s*0\s*;", body)
+        )
+        assert has_indicator and not (strips_outline and not re.search(r"box-shadow\s*:", body)), (
+            f"app.css: :focus-visible rule '{m.group(1).strip()}' must "
+            "declare a visible outline or box-shadow"
+        )
+
+
+def test_prefers_reduced_motion_block_present(css_text: str) -> None:
+    """A `@media (prefers-reduced-motion: reduce)` block must exist and
+    neutralize transitions on nav controls so users who request reduced
+    motion do not see fade animations on hover."""
+    match = re.search(
+        r"@media[^{]*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)\s*\{",
+        css_text,
+        re.IGNORECASE,
+    )
+    assert match, (
+        "app.css: missing @media (prefers-reduced-motion: reduce) block; "
+        "Phase 3 requires honoring user motion preferences on nav transitions"
+    )
+    # Extract block body using brace counting.
+    start = match.end()
+    depth = 1
+    i = start
+    while i < len(css_text) and depth > 0:
+        ch = css_text[i]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        i += 1
+    block = css_text[start : i - 1]
+
+    # The block must neutralize transitions on at least one nav surface.
+    has_nav_override = bool(
+        re.search(r"\.nav-[a-z-]+[^{]*\{[^}]*transition\s*:", block, re.DOTALL)
+    )
+    has_universal_override = bool(
+        re.search(r"\*[^{]*\{[^}]*transition\s*:", block, re.DOTALL)
+    )
+    assert has_nav_override or has_universal_override, (
+        "app.css: prefers-reduced-motion block must override transitions on "
+        "nav controls (e.g. .nav-icon-btn, .nav-link) or use a universal "
+        "* override"
+    )
+

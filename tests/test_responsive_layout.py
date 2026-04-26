@@ -322,3 +322,94 @@ def test_task_lists_use_min_width_zero_class(
     assert "task-title" in html, f"{path}: missing .task-title class"
 
 
+# ---------------------------------------------------------------------------
+# Phase 3: accessibility — icon-only controls expose accessible names
+# ---------------------------------------------------------------------------
+
+
+def _accessible_name(tag: _Tag) -> str:
+    """Return a non-empty accessible name source for an interactive tag,
+    or an empty string if none is declared."""
+    for key in ("aria-label", "aria-labelledby", "title"):
+        value = tag.attrs.get(key, "").strip()
+        if value:
+            return value
+    return tag.text.strip()
+
+
+@pytest.mark.parametrize("path", AUTHENTICATED_ROUTES)
+def test_icon_only_nav_controls_have_accessible_names(
+    client: TestClient, path: str
+) -> None:
+    """Settings link, theme toggle, and logout button render with icon-only
+    visual content. Each must expose an accessible name so screen readers
+    can identify them."""
+    html = _get_html(client, path)
+    parsed = _parse(html)
+
+    # Settings link in the utility cluster.
+    settings = [
+        t for t in parsed.tags
+        if t.name == "a" and t.attrs.get("href", "") == "/settings"
+        and "nav-icon-btn" in _classes(t)
+    ]
+    assert settings, f"{path}: missing .nav-icon-btn /settings link"
+    assert _accessible_name(settings[0]), (
+        f"{path}: /settings icon link is missing an accessible name "
+        "(aria-label/title/visible text)"
+    )
+
+    # Theme toggle button.
+    theme = [t for t in parsed.tags if t.attrs.get("id") == "theme-toggle"]
+    assert theme, f"{path}: missing #theme-toggle"
+    assert _accessible_name(theme[0]), (
+        f"{path}: #theme-toggle is missing an accessible name"
+    )
+
+    # Logout button (only present when auth is enabled). When present, it
+    # must have an accessible name.
+    logout_buttons = [
+        t for t in parsed.tags
+        if t.name == "button"
+        and "nav-icon-btn" in _classes(t)
+        and "logout" in (t.attrs.get("aria-label", "") + t.attrs.get("title", "")).lower()
+    ]
+    if logout_buttons:
+        assert _accessible_name(logout_buttons[0]), (
+            f"{path}: logout button is missing an accessible name"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Phase 3: tab order — header before main, sections nav after main on sm
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("path", AUTHENTICATED_ROUTES)
+def test_tab_order_dom_sequence(client: TestClient, path: str) -> None:
+    """Visual order on sm is top bar → main → bottom tab bar. Tab order
+    follows DOM order, so the document must place the Primary nav inside
+    the header before <main>, and the Sections nav (tab bar) after <main>.
+    """
+    html = _get_html(client, path)
+
+    # Locate landmark anchors in the raw HTML by their stable attribute strings.
+    primary_idx = html.find('aria-label="Primary"')
+    main_idx = html.find("<main")
+    sections_idx = html.find('aria-label="Sections"')
+
+    assert primary_idx != -1, f"{path}: missing Primary nav landmark"
+    assert main_idx != -1, f"{path}: missing <main> landmark"
+    assert sections_idx != -1, f"{path}: missing Sections nav landmark"
+
+    assert primary_idx < main_idx, (
+        f"{path}: Primary nav must appear before <main> in DOM order so "
+        "keyboard tab order matches the top-to-bottom visual order"
+    )
+    assert main_idx < sections_idx, (
+        f"{path}: Sections nav (bottom tab bar) must appear after <main> "
+        "in DOM order so it is reached after page content during keyboard "
+        "navigation on sm"
+    )
+
+

@@ -58,6 +58,7 @@ docker compose up --build
 - Authentication: Single-user passkey (WebAuthn) via `py_webauthn` and `itsdangerous` session cookies. API keys (`Authorization: Bearer mst_...`) provide programmatic access. Set `AUTH_DISABLED=true` to skip auth in dev/test. Existing tests use `AUTH_DISABLED=true` via `conftest.py`.
 - Domain rule: recurring tasks remain single persistent task records whose `due_date` advances on completion.
 - Notes rule: task notes are stored as raw Markdown and rendered as safe HTML.
+- Responsive UI: the browser UI must remain usable without horizontal panning at viewport widths >= 320px. Use the three-tier breakpoint strategy (`sm` <= 599px, `md` 600–899px, `lg` >= 900px) defined in `docs/plans/Adaptive-Responsive-UX-Implementation-Plan.md`. Bottom-fixed elements must respect `env(safe-area-inset-bottom)`, and tap targets on `sm` must be >= 44x44 CSS px.
 
 ## Skills
 

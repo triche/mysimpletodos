@@ -302,6 +302,10 @@ mst backup restore --yes backup.db</code></pre>
 <p>Run tests:</p>
 <pre><code>uv run pytest</code></pre>
 
+<p>The default suite includes responsive structural and CSS-contract checks.
+To run only the responsive subset:</p>
+<pre><code>uv run pytest -m responsive</code></pre>
+
 <p>Run lint checks:</p>
 <pre><code>uv run ruff check .</code></pre>
 
@@ -310,6 +314,35 @@ mst backup restore --yes backup.db</code></pre>
 
 <p>Build the container image:</p>
 <pre><code>docker build .</code></pre>
+
+<h2>Responsive Support</h2>
+
+<p>The browser UI is designed to work without horizontal panning on phones,
+tablets, and desktops. See
+<a href="plans/Adaptive-Responsive-UX-Implementation-Plan.md">Adaptive-Responsive-UX-Implementation-Plan.md</a>
+for the full plan, breakpoint strategy, and overflow inventory.</p>
+
+<p>Three behaviour-based breakpoints (single source of truth in
+<code>app/static/app.css</code>):</p>
+<ul>
+  <li><strong>sm</strong> — phone portrait, <code>max-width: 599px</code>. Bottom tab bar for primary sections; compact top bar with brand and utility cluster.</li>
+  <li><strong>md</strong> — phone landscape and small tablets, <code>max-width: 899px</code>.</li>
+  <li><strong>lg</strong> — desktop and larger tablets, <code>min-width: 900px</code>. Single-row top nav with brand, primary tabs, and utility cluster.</li>
+</ul>
+
+<h3>Responsive Checklist</h3>
+<p>When making UI changes, verify each item before merging:</p>
+<ol>
+  <li>Primary section links and utility controls (settings, theme toggle, logout) are present in the DOM at every breakpoint — visibility is controlled by CSS, not by removing elements.</li>
+  <li>No fixed widths greater than 320px on top-level wrappers outside the <code>lg</code> <code>@media</code> block.</li>
+  <li>Tap targets on <code>sm</code> are &gt;= 44x44 CSS px with adequate spacing.</li>
+  <li>Bottom-fixed elements include <code>env(safe-area-inset-bottom)</code> padding and the page reserves matching bottom padding so content is never hidden behind the tab bar.</li>
+  <li>Tabular content is wrapped in <code>.table-scroll</code> so wide tables scroll inside the wrapper rather than forcing the page to overflow.</li>
+  <li>Long text in flex children declares <code>min-width: 0</code> (and <code>overflow-wrap: anywhere</code> where appropriate) so titles do not push the parent wider than the viewport.</li>
+  <li>Icon-only controls expose accessible names via <code>aria-label</code> (or visually-hidden text), and keyboard focus is visible via <code>:focus-visible</code> styles.</li>
+  <li>Any new <code>@media</code> rule reuses the documented breakpoint values (<code>599px</code>, <code>899px</code>, <code>900px</code>).</li>
+  <li><code>uv run pytest -m responsive</code> passes locally before opening a PR.</li>
+</ol>
 
 <h2>Project Structure</h2>
 <ul>
