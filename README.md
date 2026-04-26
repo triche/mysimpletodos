@@ -257,6 +257,13 @@ Run tests:
 uv run pytest
 ```
 
+The default suite includes responsive structural and CSS-contract checks.
+To run only the responsive subset:
+
+```bash
+uv run pytest -m responsive
+```
+
 Run lint checks:
 
 ```bash
@@ -274,6 +281,47 @@ Build the container image:
 ```bash
 docker build .
 ```
+
+## Responsive Support
+
+The browser UI is designed to work without horizontal panning on phones,
+tablets, and desktops. See
+[docs/plans/Adaptive-Responsive-UX-Implementation-Plan.md](docs/plans/Adaptive-Responsive-UX-Implementation-Plan.md)
+for the full plan, breakpoint strategy, and overflow inventory.
+
+Three behaviour-based breakpoints (single source of truth in
+`app/static/app.css`):
+
+- `sm` — phone portrait, `max-width: 599px`. Bottom tab bar for primary
+  sections; compact top bar with brand and utility cluster.
+- `md` — phone landscape and small tablets, `max-width: 899px`.
+- `lg` — desktop and larger tablets, `min-width: 900px`. Single-row top
+  nav with brand, primary tabs, and utility cluster.
+
+### Responsive Checklist
+
+When making UI changes, verify each item before merging:
+
+1. Primary section links and utility controls (settings, theme toggle,
+   logout) are present in the DOM at every breakpoint — visibility is
+   controlled by CSS, not by removing elements.
+2. No fixed widths greater than 320px on top-level wrappers outside the
+   `lg` `@media` block.
+3. Tap targets on `sm` are >= 44x44 CSS px with adequate spacing.
+4. Bottom-fixed elements include `env(safe-area-inset-bottom)` padding
+   and the page reserves matching bottom padding so content is never
+   hidden behind the tab bar.
+5. Tabular content is wrapped in `.table-scroll` so wide tables scroll
+   inside the wrapper rather than forcing the page to overflow.
+6. Long text in flex children declares `min-width: 0` (and
+   `overflow-wrap: anywhere` where appropriate) so titles do not push
+   the parent wider than the viewport.
+7. Icon-only controls expose accessible names via `aria-label` (or
+   visually-hidden text), and keyboard focus is visible via
+   `:focus-visible` styles.
+8. Any new `@media` rule reuses the documented breakpoint values
+   (`599px`, `899px`, `900px`).
+9. `uv run pytest -m responsive` passes locally before opening a PR.
 
 ## Project Structure
 

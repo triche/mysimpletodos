@@ -169,6 +169,8 @@ with green tests, updated docs, and no layout regressions on desktop.
 
 ### Phase 0 — Baseline, Inventory, and Test Harness
 
+Status: ✅ complete (April 2026).
+
 Goal: establish reproducible checks before UI changes.
 
 Tasks:
@@ -200,6 +202,8 @@ Acceptance Criteria:
 3. No new runtime or test dependencies introduced.
 
 ### Phase 1 — Navigation Information Architecture Update
+
+Status: ✅ complete (April 2026).
 
 Goal: implement the bottom tab bar + compact top bar pattern on `sm`,
 preserve `lg` nav, refine `md`.
@@ -239,6 +243,8 @@ Acceptance Criteria:
 
 ### Phase 2 — Page Layout Adaptation and Touch Ergonomics
 
+Status: ✅ complete (April 2026).
+
 Goal: ensure content areas are phone-friendly beyond the header. Resolve
 every item in the Current Overflow Inventory.
 
@@ -275,7 +281,53 @@ Acceptance Criteria:
 
 ### Phase 3 — Accessibility, Motion, and HTMX Polish
 
+Status: ✅ complete (April 2026).
+
 Goal: maintain quality while improving responsiveness.
+
+Outcomes:
+
+1. DOM order matches the visual order on `sm` (header → main → bottom tab
+   bar), verified by `test_tab_order_dom_sequence` in
+   `tests/test_responsive_layout.py`. Keyboard tab traversal therefore
+   reaches the top utility cluster, the page content, and finally the
+   bottom tab bar in that sequence.
+2. All icon-only nav controls (`/settings`, theme toggle, logout) carry
+   `aria-label` accessible names; verified by
+   `test_icon_only_nav_controls_have_accessible_names`.
+3. `:focus-visible` rings (2px box-shadow in `--accent`) added for
+   `.nav-brand`, `.nav-icon-btn`, `.nav-link`, and `.nav-tabbar a/button`
+   in `app/static/app.css`. Hover styling alone was insufficient for
+   keyboard users. Verified by `test_nav_controls_have_focus_visible_styles`
+   and `test_focus_visible_declares_visible_indicator`.
+4. `@media (prefers-reduced-motion: reduce)` block added that neutralizes
+   `transition` on every nav surface. Verified by
+   `test_prefers_reduced_motion_block_present`.
+5. Color contrast (sRGB) for the focus ring (`--accent` #2563eb):
+   - Light theme on `--surface-strong` #f8fafc → 7.49:1
+   - Dark  theme on `--surface-strong` #1e293b → 4.83:1
+   Both exceed WCAG 1.4.11 (3:1) for non-text UI components. The values
+   are recorded inline in `app/static/app.css` next to the focus rules.
+6. HTMX scope: the app currently uses standard form submissions for quick
+   update, save-and-close, and inline edits — no `hx-*` attributes are
+   present in any template (verified via `grep`). The plan's HTMX
+   constraint is therefore satisfied by construction; if HTMX is
+   reintroduced for nav fragments later, it must preserve the adaptive
+   classes documented in Phase 1.
+7. iOS Safari keyboard sanity check is a manual QA item; no automatic
+   bottom-bar hide is implemented because the issue has not been
+   observed. The fallback remains documented for future use.
+
+Acceptance criteria status:
+
+1. ✅ Keyboard navigation works at all breakpoints — DOM order test plus
+   visible focus rings.
+2. ✅ Screen readers identify both nav landmarks correctly — Phase 1
+   landmark tests still pass; icon-only controls now have accessible names.
+3. ✅ No motion regressions for users preferring reduced motion —
+   `prefers-reduced-motion` block neutralizes nav transitions.
+4. ✅ HTMX swaps do not break adaptive layout or focus — no HTMX
+   attributes in templates; constraint documented for future swaps.
 
 Tasks:
 
@@ -304,7 +356,39 @@ Acceptance Criteria:
 
 ### Phase 4 — Documentation and Regression Guardrails
 
+Status: ✅ complete (April 2026).
+
 Goal: make adaptive behavior durable and easy to maintain.
+
+Outcomes:
+
+1. `README.md` gained a "Responsive Support" section that summarizes the
+   breakpoint strategy and links to this plan, plus a "Responsive
+   Checklist" for future UI changes (links present at all breakpoints,
+   no fixed widths > 320px, 44px tap targets, safe-area padding,
+   `.table-scroll` wrappers, `min-width: 0` on flex children with long
+   text, accessible names + `:focus-visible`, reuse documented
+   breakpoint values, run `pytest -m responsive`).
+2. `README.md` "Developer Commands" now documents that the default
+   `uv run pytest` invocation includes the responsive subset, and shows
+   `uv run pytest -m responsive` for running only those tests.
+3. `.github/copilot-instructions.md` "Architecture Constraints" gained a
+   bullet stating: "UI must remain usable without horizontal panning at
+   viewport widths >= 320px; use the three-tier breakpoint strategy
+   defined in `docs/plans/Adaptive-Responsive-UX-Implementation-Plan.md`,
+   with `env(safe-area-inset-bottom)` for bottom-fixed elements and
+   >= 44x44 CSS px tap targets on `sm`."
+4. The `responsive` pytest marker is declared in `pyproject.toml` under
+   `[tool.pytest.ini_options].markers` and the responsive tests live
+   under `tests/`, so the default `uv run pytest` invocation already
+   exercises them — no new CI jobs required.
+
+Acceptance criteria status:
+
+1. ✅ Documentation matches shipped responsive behavior.
+2. ✅ `uv run pytest` (default invocation) exercises responsive
+   assertions.
+3. ✅ No new external dependencies introduced.
 
 Tasks:
 

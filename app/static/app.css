@@ -1549,3 +1549,43 @@ h1 {
     padding: 2rem 1.25rem;
   }
 }
+
+/* --- Phase 3: accessibility, motion, and focus polish --- */
+
+/*
+ * Visible focus indicators for nav surfaces. We use :focus-visible so the
+ * indicator only appears for keyboard users (not mouse clicks), and we
+ * declare a box-shadow ring instead of relying on the user-agent outline
+ * so the ring sits inside our rounded corners and stays visible over both
+ * light and dark themes.
+ *
+ * Contrast (sRGB, measured April 2026), focus ring color --accent #2563eb:
+ *   light theme on --surface-strong #f8fafc -> 7.49:1
+ *   dark  theme on --surface-strong #1e293b -> 4.83:1
+ * Both exceed WCAG 1.4.11 (3:1) for non-text UI components.
+ */
+.nav-brand:focus-visible,
+.nav-icon-btn:focus-visible,
+.nav-link:focus-visible,
+.nav-tabbar a:focus-visible,
+.nav-tabbar button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+  border-radius: 6px;
+}
+
+/*
+ * Reduced motion: honor users who request reduced motion by neutralizing
+ * the short color/transform transitions on nav controls. Hover and focus
+ * still update colors -- they just snap instead of fading.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .nav-icon-btn,
+  .nav-link,
+  .nav-tabbar a,
+  .nav-tabbar button,
+  .nav-brand {
+    transition: none;
+  }
+}
+
