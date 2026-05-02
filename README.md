@@ -1,8 +1,8 @@
+<img src="docs/mst-logo.png" alt="MySimpleTodos logo" width="150">
+
 # MySimpleTodos
 
 MySimpleTodos is a local-first task application for a single laptop user. FastAPI serves server-rendered HTML pages with small HTMX interactions, SQLite persists data, and the app is designed around task states, optional due dates, recurring tasks, Markdown notes, and project organization with notes, due dates, and completion tracking.
-
-![MySimpleTodos logo](docs/mst-logo.png)
 
 ## Features
 
