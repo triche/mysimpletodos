@@ -47,12 +47,13 @@ def home() -> RedirectResponse:
 def inbox(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
     tasks = list_tasks(session, status=TaskStatus.INBOX)
     projects_all = list_projects(session, include_completed=True)
+    active_projects = list_projects(session)
     projects_map = {p.id: p.name for p in projects_all}
     ctx = base_context(session)
     ctx.update({
         "tasks": tasks,
         "projects": projects_map,
-        "projects_list": projects_all,
+        "projects_list": active_projects,
         "status_labels": STATUS_LABELS,
     })
     return templates.TemplateResponse(request, "inbox.html", ctx)
@@ -63,13 +64,14 @@ def today(request: Request, session: Session = Depends(get_session)) -> HTMLResp
     overdue = list_tasks_overdue(session)
     due_today = list_tasks_due_today(session)
     projects_all = list_projects(session, include_completed=True)
+    active_projects = list_projects(session)
     projects_map = {p.id: p.name for p in projects_all}
     ctx = base_context(session)
     ctx.update({
         "overdue": overdue,
         "due_today": due_today,
         "projects": projects_map,
-        "projects_list": projects_all,
+        "projects_list": active_projects,
         "status_labels": STATUS_LABELS,
         "today_date": date.today().isoformat(),
     })
@@ -226,6 +228,7 @@ def all_tasks(
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
     projects_list_all = list_projects(session, include_completed=True)
+    active_projects = list_projects(session)
     projects_map = {p.id: p.name for p in projects_list_all}
 
     # Parse filters
@@ -261,7 +264,8 @@ def all_tasks(
     ctx.update({
         "tasks": tasks,
         "projects": projects_map,
-        "projects_list": projects_list_all,
+        "projects_list": active_projects,
+        "projects_filter_list": projects_list_all,
         "status_labels": STATUS_LABELS,
         "today": date.today(),
         # Current filter values for the form

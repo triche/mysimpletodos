@@ -31,7 +31,7 @@
           <select id="f-project" name="project_id">
             <option value="">All</option>
             <option value="none" {% if f_project_id == "none" %}selected{% endif %}>No project</option>
-            {% for project in projects_list %}
+            {% for project in projects_filter_list %}
             <option value="{{ project.id }}" {% if f_project_id == project.id|string %}selected{% endif %}>{{ project.name }}</option>
             {% endfor %}
           </select>

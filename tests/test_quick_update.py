@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.models import TaskStatus
-from app.services.project_service import create_project
+from app.services.project_service import complete_project, create_project
 from app.services.task_service import create_task, get_task
 
 # ---------------------------------------------------------------------------
@@ -182,6 +182,19 @@ class TestInlineSelectorsOnInbox:
         create_task(db_session, title="Proj selector task")
         response = client.get("/inbox")
         assert 'name="project_id"' in response.text
+
+    def test_inbox_project_selector_hides_completed_projects(
+        self, client: TestClient, db_session: Session
+    ) -> None:
+        create_project(db_session, name="Open Inline Project")
+        completed_project = create_project(db_session, name="Completed Inline Project")
+        complete_project(db_session, completed_project.id)  # type: ignore[arg-type]
+        create_task(db_session, title="Proj selector task")
+
+        response = client.get("/inbox")
+
+        assert "Open Inline Project" in response.text
+        assert "Completed Inline Project" not in response.text
 
     def test_selectors_reflect_current_values(
         self, client: TestClient, db_session: Session

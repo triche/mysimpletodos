@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from app.models import RecurrenceType, TaskStatus
-from app.services.project_service import create_project
+from app.services.project_service import complete_project, create_project
 from app.services.task_service import create_task, get_task, list_tasks
 
 # --- Home redirect ---
@@ -145,6 +145,20 @@ def test_edit_page_shows_project_dropdown(client: TestClient, db_session: Sessio
     response = client.get(f"/tasks/{task.id}/edit")
 
     assert "Test Project" in response.text
+
+
+def test_edit_page_hides_completed_projects_from_project_dropdown(
+    client: TestClient, db_session: Session
+) -> None:
+    create_project(db_session, name="Open Edit Project")
+    completed_project = create_project(db_session, name="Completed Edit Project")
+    complete_project(db_session, completed_project.id)  # type: ignore[arg-type]
+    task = create_task(db_session, title="Editable")
+
+    response = client.get(f"/tasks/{task.id}/edit")
+
+    assert "Open Edit Project" in response.text
+    assert "Completed Edit Project" not in response.text
 
 
 def test_edit_page_shows_status_options(client: TestClient, db_session: Session) -> None:
